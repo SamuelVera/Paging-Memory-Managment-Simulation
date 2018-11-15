@@ -19,6 +19,14 @@ public class Interfaz {
         return (int) this.pm.getTamMarco();
     }
     
+    public Proceso getProceso(String i){
+        return this.pm.getProceso(i);
+    }
+    
+    public boolean getMarcoValue(int i){
+        return this.pm.getMarcoValue(i);
+    }
+    
     public double getTamMP(){
         return this.pm.getTamMP();
     }
@@ -27,4 +35,15 @@ public class Interfaz {
         return this.pm.getTamMS();
     }
     
+    public void crearProceso(String id, double tam) throws InterruptedException{
+        this.pm.crearProceso(id, tam);
+    }
+    
+    public int getNumProcesos(){
+        return this.pm.getNumProcesos();
+    }
+    
+    public String getEstadoProceso(String i){
+        return this.getProceso(i).getEstado();
+    }
 }
