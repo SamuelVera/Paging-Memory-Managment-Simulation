@@ -1,10 +1,11 @@
 package UI;
 
-import logica.Interfaz;
+import com.sun.javafx.fxml.expression.BinaryExpression;
+import logica.OS;
 
 public class InicializadorMemoria extends javax.swing.JFrame {
 
-    Interfaz OS;
+    OS OS;
     
     public InicializadorMemoria() {
         this.setLocationRelativeTo(null);
@@ -20,92 +21,120 @@ public class InicializadorMemoria extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel4 = new javax.swing.JLabel();
-        factorMP = new javax.swing.JComboBox<>();
-        jLabel1 = new javax.swing.JLabel();
-        factorMarco = new javax.swing.JComboBox<>();
-        factorMS = new javax.swing.JComboBox<>();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        iniciar = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        paginaField = new javax.swing.JTextField();
+        mpField = new javax.swing.JTextField();
+        msField = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jLabel4.setText("2               bytes");
-        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 140, 100, -1));
-
-        factorMP.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "15", "16", "17" }));
-        getContentPane().add(factorMP, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 120, -1, -1));
-
-        jLabel1.setText("Desde 32 Kb hasta 128 Kb");
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 130, 150, 30));
-
-        factorMarco.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "10", "11", "12", "13" }));
-        getContentPane().add(factorMarco, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 60, -1, -1));
-
-        factorMS.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "20", "21", "22", "23", "24", "25" }));
-        getContentPane().add(factorMS, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 180, -1, -1));
-
-        jLabel5.setText("2               bytes");
-        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 80, 100, -1));
-
-        jLabel6.setText("2               bytes");
-        getContentPane().add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 200, 100, -1));
-
-        jLabel7.setText("Desde 1 Kb hasta 8 Kb");
-        getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 70, 150, 30));
-
-        jLabel8.setText("Desde 1 Mb hasta 32 Mb");
-        getContentPane().add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 190, 150, 30));
-
-        jButton1.setText("Iniciar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        iniciar.setText("Continuar");
+        iniciar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                iniciarActionPerformed(evt);
             }
         });
-        getContentPane().add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 260, -1, -1));
+        getContentPane().add(iniciar, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 250, -1, -1));
 
-        jLabel3.setText("Tamaño de M. Principal");
-        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 120, 150, -1));
+        jLabel3.setText("Kb. Tamaño de M. Principal");
+        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 120, 170, 20));
 
-        jLabel9.setText("Tamaño de M. Secundaria");
-        getContentPane().add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 180, 150, -1));
+        jLabel9.setText("Mb. Tamaño de M. Secundaria");
+        getContentPane().add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 180, 170, 20));
 
-        jLabel10.setText("Tamaño de página/marco");
-        getContentPane().add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 60, 150, -1));
-        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 360, 300));
+        jLabel10.setText("Kb. Tamaño de página/marco");
+        getContentPane().add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 60, 170, 20));
+
+        paginaField.setText("1");
+        getContentPane().add(paginaField, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 60, 140, 30));
+
+        mpField.setText("16");
+        getContentPane().add(mpField, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 120, 140, -1));
+
+        msField.setText("1");
+        getContentPane().add(msField, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 180, 140, -1));
+
+        jLabel1.setText("Los números ingresados deben ser potencias de 2");
+        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, 310, 20));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private boolean isPow(double test){
+        double test1 = test;
+        while(true){
+            if(test1 == 1){
+                return true;
+            }
+            if(test1%2 != 0){ //No es potencia de 2
+                return false;
+            }
+            test1 = test1 / 2;
+        }
+    }
+    
+    private void iniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iniciarActionPerformed
         double tamMarco, tamMP, tamMS;
+        boolean pasar = true;
         
-        tamMarco = Math.pow(2, Integer.parseInt(this.factorMarco.getItemAt(this.factorMarco.getSelectedIndex())));
-        tamMP = Math.pow(2, Integer.parseInt(this.factorMP.getItemAt(this.factorMP.getSelectedIndex())));
-        tamMS = Math.pow(2, Integer.parseInt(this.factorMS.getItemAt(this.factorMS.getSelectedIndex())));
-        if(tamMP == tamMS){ //Si la memoria principal es igual a la secundaria filtralo
-            tamMP = 1024*1024*128; //Memoria principal de 128 Kb
-            tamMS = 1024*1024*1024*32; //Memoria secundaria de 32 Mb
+        if(this.mpField.getText().length() > 0 && this.msField.getText().length() > 0 && this.paginaField.getText().length() > 0){
+                //Validar tamMarco
+            tamMarco = Integer.parseInt(this.paginaField.getText());
+            pasar = this.isPow(tamMarco);
+            
+            if(pasar){
+                tamMP = Integer.parseInt(this.mpField.getText());
+                pasar = this.isPow(tamMP);
+                
+                if(pasar){
+                    
+                    tamMS = Integer.parseInt(this.msField.getText());
+                    pasar = this.isPow(tamMS);
+
+                    if(pasar){
+                            //Verificar que mp no es mayor a ms
+                        if((tamMP*1024) >= (tamMS*1024*1024)){
+                            System.out.println("Add JOptionPane de mp es mayor a mp");
+                            return;
+                        }
+                            //Verificar que el número de marcos es mayor o igual a 16
+                        if((tamMarco*16) > tamMP){
+                            System.out.println("Add JOptionPane de el tamaño de página es muy grande para la mp");
+                            return;
+                        }
+                            //Verificar que el número de marcos es menor o igual a 256
+                        if((tamMarco*256) < tamMP){
+                            System.out.println("Add JOptionPane de el tamaño de página es muy pequeño para la mp");
+                            return;
+                        }
+                        
+                        tamMarco = tamMarco*1024; //Trabajar en bytes
+                        tamMP = tamMP*1024; //Trabajar en bytes
+                        tamMS = tamMS*1024*1024; //Trabajar en bytes
+                        
+                        this.OS = new OS(tamMarco, tamMP, tamMS);
+                        
+                        InicializadorProcesos exe = new InicializadorProcesos(this.OS);
+                        this.setVisible(false);
+                    }else{
+                        System.out.println("Add JOptinoPane de tamaño de ms no es potencia de 2");
+                    }
+                }else{
+                    System.out.println("Add JOptinoPane de tamaño de mp no es potencia de 2");
+                }
+            }else{
+                System.out.println("Add JOptinoPane de tamaño de página no es potencia de 2");
+            }
+        }else{
+            System.out.println("Add JOptinoPane de campos inválidos");
         }
-        if(tamMP/tamMarco < 16){ //Debe de poder haber mínimo 16 marcos en memoria principal
-            tamMarco = tamMP/16;
-        }
         
-        this.OS = new Interfaz(tamMarco, tamMP, tamMS);
-        
-        UIEjecucion exe = new UIEjecucion(this.OS);
-        this.setVisible(false);
-        
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_iniciarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -144,19 +173,13 @@ public class InicializadorMemoria extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> factorMP;
-    private javax.swing.JComboBox<String> factorMS;
-    private javax.swing.JComboBox<String> factorMarco;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton iniciar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JTextField mpField;
+    private javax.swing.JTextField msField;
+    private javax.swing.JTextField paginaField;
     // End of variables declaration//GEN-END:variables
 }
