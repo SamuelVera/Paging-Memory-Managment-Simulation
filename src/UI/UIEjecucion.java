@@ -1,78 +1,86 @@
 package UI;
 
-import java.awt.Color;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import logica.Interfaz;
+import logica.OS;
 import logica.Proceso;
 
 public class UIEjecucion extends javax.swing.JFrame {
 
-    Interfaz OS;
+    protected static OS OS;
         //Celdas de memoria
     public static JTextField[] celdas;
         //Label de celdas de memoria
     public static JLabel[] labelCeldas;
-    private JLabel[] idProcesos;
-    private JLabel[] pagSelecProc;
+    private static JLabel[] idProcesos;
+    private static JLabel[] pagSelecProc;
         //Label de procesos
     public static LinkedList labelIdProcesos = new LinkedList();
     public static double ocupado;
     
-    public UIEjecucion(Interfaz OS) {
+    public UIEjecucion() {
         
         initComponents();
         
-        this.OS = OS;
         this.setVisible(true);
         
-        int posX = this.mempLabel.getX();
+        int posX = this.mempLabel.getX()+20;
         int posY = this.mempLabel.getY()+40;
-        int tamMarco = this.OS.getTamMarco();
+        double tamMarco = UIEjecucion.OS.getTamMarco();
         
-        //Desplegar arreglo de memoria
-        UIEjecucion.celdas = new JTextField[this.OS.getNumMarcos()];
-        UIEjecucion.labelCeldas = new JLabel[this.OS.getNumMarcos()];
-        
-        
-        for(int i=0;i<this.celdas.length;i++){
-            UIEjecucion.celdas[i] = new JTextField();
-            UIEjecucion.celdas[i].setLocation(this.mempLabel.getX(), posY);
+        for(int i=0;i<UIEjecucion.celdas.length;i++){
             UIEjecucion.celdas[i].setFocusable(false);
-                UIEjecucion.celdas[i].setBackground(Color.green);
             UIEjecucion.labelCeldas[i] = new JLabel();
             UIEjecucion.labelCeldas[i].setText(""+i);
-            getContentPane().add(UIEjecucion.celdas[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(posX, posY, 100, 30));
-            getContentPane().add(UIEjecucion.labelCeldas[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(posX-20, posY, 25, 30));
-            posY+=30;
-            if(i % 16 == 15){
+            getContentPane().add(UIEjecucion.celdas[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(posX, posY, 100, 20));
+            getContentPane().add(UIEjecucion.labelCeldas[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(posX-20, posY, 25, 20));
+            posY+=20;
+            if(i % 32 == 31){
                 posX+=125;
-                posY-=(16*30);
+                posY-=(32*20);
             }
         }
-        this.setSize(posX+230 , ((this.mempLabel.getY()+90+(20*30))));
+        this.setSize(posX+230 , ((this.mempLabel.getY()+90+(32*20))));
         
         double aux = this.OS.getTamMP();
-        if(aux/(1024*1024)>1){
+        if(aux/(1024*1024)>=1){
             aux = (aux/(1024*1024));
+                //Está en Mbytes
             this.mempLabel.setText("Memoria Principal: "+aux+" Mb");
         }else{
             aux = (aux/1024);
+                //Está en Kbytes
             this.mempLabel.setText("Memoria Principal: "+aux+" Kb");
         }
         
-        aux = this.OS.getTamMarco()/1024;
-        this.marcoLabel.setText("Tamaño del Marco: "+aux+" Kb");
+        aux = UIEjecucion.OS.getTamMarco();
+        if(aux/(1024*1024)>=1){
+            aux = (aux/(1024*1024));
+                //Está en Mbytes
+            this.marcoLabel.setText("Tamaño del Marco: "+aux+" Mb");
+        }else{
+            aux = (aux/1024);
+                //Está en Kbytes
+            this.marcoLabel.setText("Tamaño del Marco: "+aux+" Kb");
+        }
         
-        aux = this.OS.getTamMS();
-        aux = aux/(1024*1024);
-        this.memsLabel.setText("Memoria Secundaria: "+aux+" Mb");
+        aux = UIEjecucion.OS.getTamMS();
+        if(aux/(1024*1024*1024)>=1){
+            aux = (aux/(1024*1024*1024));
+                //Está en Gbytes
+            this.memsLabel.setText("Memoria Secundaria: "+aux+" Gb");
+        }else{
+            aux = aux/(1024*1024);
+                //Está en Mbytes
+            this.memsLabel.setText("Memoria Secundaria: "+aux+" Mb");
+        }
         
-        this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado)+" Mb");
-        
+        this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+        this.updateProcessIdsInitiate();
+        UIEjecucion.OS.startSimul();
     }
 
     /**
@@ -110,7 +118,8 @@ public class UIEjecucion extends javax.swing.JFrame {
         selectProcLabel = new javax.swing.JLabel();
         selectNumPag = new javax.swing.JLabel();
         selectEstado = new javax.swing.JLabel();
-        selecFrag = new javax.swing.JLabel();
+        selectFrag = new javax.swing.JLabel();
+        selectTam = new javax.swing.JLabel();
 
         jLabel3.setText("jLabel3");
 
@@ -118,16 +127,16 @@ public class UIEjecucion extends javax.swing.JFrame {
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         procesosLabel.setText("Procesos: ");
-        getContentPane().add(procesosLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 200, 20));
+        getContentPane().add(procesosLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 60, 20));
 
         mempLabel.setText("Memoria Principal:");
-        getContentPane().add(mempLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 10, 230, 20));
+        getContentPane().add(mempLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 10, 230, 20));
 
         marcoLabel.setText("Tamaño del Marco:");
-        getContentPane().add(marcoLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 30, 220, 20));
+        getContentPane().add(marcoLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 30, 220, 20));
 
         memsLabel.setText("Memoria Secundaria:");
-        getContentPane().add(memsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 10, 230, 20));
+        getContentPane().add(memsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 10, 230, 20));
 
         elimnLabel.setText("Eliminar por ID:");
         getContentPane().add(elimnLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 540, 130, 20));
@@ -140,25 +149,30 @@ public class UIEjecucion extends javax.swing.JFrame {
         getContentPane().add(elimnField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 540, 140, -1));
 
         eliminar.setText("Eliminar");
+        eliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                eliminarActionPerformed(evt);
+            }
+        });
         getContentPane().add(eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 540, 90, -1));
 
         suspLabel.setText("Suspender por ID:");
-        getContentPane().add(suspLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 460, 130, 20));
-        getContentPane().add(suspField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 460, 140, -1));
+        getContentPane().add(suspLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 480, 130, 20));
+        getContentPane().add(suspField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 480, 140, -1));
 
         susp.setText("Suspender");
-        getContentPane().add(susp, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 460, 90, -1));
+        getContentPane().add(susp, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 480, 90, -1));
 
         addLabel.setText("Añadir:");
-        getContentPane().add(addLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 380, 60, 20));
+        getContentPane().add(addLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 390, 60, 20));
 
         idLabel.setText("ID:");
-        getContentPane().add(idLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 400, 50, 20));
-        getContentPane().add(idField, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 400, 240, -1));
+        getContentPane().add(idLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 420, 50, 20));
+        getContentPane().add(idField, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 420, 240, -1));
 
         tamLabel.setText("Tamaño del proceso:");
-        getContentPane().add(tamLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 430, 120, 20));
-        getContentPane().add(tamField, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 430, 160, -1));
+        getContentPane().add(tamLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, 120, 20));
+        getContentPane().add(tamField, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 450, 160, -1));
 
         agregar.setText("Añadir");
         agregar.addActionListener(new java.awt.event.ActionListener() {
@@ -166,16 +180,16 @@ public class UIEjecucion extends javax.swing.JFrame {
                 agregarActionPerformed(evt);
             }
         });
-        getContentPane().add(agregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 400, 80, -1));
+        getContentPane().add(agregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 420, 80, -1));
 
         unitLabel.setText("Kb");
-        getContentPane().add(unitLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 430, 80, 20));
+        getContentPane().add(unitLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 450, 80, 20));
 
-        ocuLabel.setText("Espacio ocupado");
-        getContentPane().add(ocuLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 30, 230, 20));
+        ocuLabel.setText("Espacio ocupado:");
+        getContentPane().add(ocuLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 30, 230, 20));
 
         verLabel.setText("Ver por ID:");
-        getContentPane().add(verLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 500, 130, 20));
+        getContentPane().add(verLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 510, 130, 20));
 
         ver.setText("Ver Datos");
         ver.addActionListener(new java.awt.event.ActionListener() {
@@ -183,8 +197,8 @@ public class UIEjecucion extends javax.swing.JFrame {
                 verActionPerformed(evt);
             }
         });
-        getContentPane().add(ver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 500, 90, -1));
-        getContentPane().add(verField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 500, 140, -1));
+        getContentPane().add(ver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 510, 90, -1));
+        getContentPane().add(verField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 510, 140, -1));
 
         volver.setText("Volver");
         volver.addActionListener(new java.awt.event.ActionListener() {
@@ -193,72 +207,143 @@ public class UIEjecucion extends javax.swing.JFrame {
             }
         });
         getContentPane().add(volver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 540, 90, -1));
-        getContentPane().add(selectProcLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 90, 160, 20));
-        getContentPane().add(selectNumPag, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 160, 160, 20));
-        getContentPane().add(selectEstado, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 110, 160, 20));
-        getContentPane().add(selecFrag, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 130, 160, 20));
+        getContentPane().add(selectProcLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 210, 20));
+        getContentPane().add(selectNumPag, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 90, 210, 20));
+        getContentPane().add(selectEstado, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 210, 20));
+        getContentPane().add(selectFrag, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, 210, 20));
+        getContentPane().add(selectTam, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 30, 210, 20));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void elimnFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_elimnFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_elimnFieldActionPerformed
+    public static void visibleProcessIds(boolean show){
+        for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+            UIEjecucion.idProcesos[i].setVisible(show);
+        }
+    }
 
-    private void visibleProcessIds(boolean show){
-        for(int i=0;i<this.idProcesos.length;i++){
-            this.idProcesos[i].setVisible(show);
+    private void modifVer(boolean show){
+        UIEjecucion.visibleProcessIds(show);
+        this.addLabel.setVisible(show);
+        this.idLabel.setVisible(show);
+        this.tamLabel.setVisible(show);
+        this.suspLabel.setVisible(show);
+        this.verLabel.setVisible(show);
+        this.procesosLabel.setVisible(show);
+        this.elimnLabel.setVisible(show);
+        this.unitLabel.setVisible(show);
+            //Ocultar botones
+        this.agregar.setVisible(show);
+        this.susp.setVisible(show);
+        this.ver.setVisible(show);
+        this.eliminar.setVisible(show);
+            //Ocultar Fields
+        this.idField.setVisible(show);
+        this.tamField.setVisible(show);
+        this.suspField.setVisible(show);
+        this.verField.setVisible(show);
+        this.elimnField.setVisible(show);
+            //Mostrar Labels
+        this.selectNumPag.setVisible(!show);
+        this.selectProcLabel.setVisible(!show);
+        this.selectEstado.setVisible(!show);
+        this.selectFrag.setVisible(!show);
+        this.selectTam.setVisible(!show);
+        this.selectFrag.setVisible(!show);
+            //Mostrar botones
+        this.volver.setVisible(!show);
+    }
+    
+    protected void updateProcessIds(){
+        for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+                UIEjecucion.idProcesos[i].setVisible(false);
+        }
+        UIEjecucion.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
+        int posY = UIEjecucion.procesosLabel.getY()+20;
+        String aux;
+        for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+            aux = (String)UIEjecucion.labelIdProcesos.get(i);
+                UIEjecucion.idProcesos[i] = new JLabel();
+                UIEjecucion.idProcesos[i].setText("ID: "+aux+" Estado: "+UIEjecucion.OS.getEstadoProceso(aux));
+                UIEjecucion.idProcesos[i].setVisible(true);
+                getContentPane().add(UIEjecucion.idProcesos[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(this.procesosLabel.getX(), posY, 200, 30));
+                posY+=20;
         }
     }
     
-    private void updateProcessIds(){
-        this.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
-        int posY = this.procesosLabel.getY()+20;
-        for(int i=0;i<this.idProcesos.length;i++){
-            this.idProcesos[i] = new JLabel();
-            this.idProcesos[i].setText("ID: "+((String)UIEjecucion.labelIdProcesos.get(i)));
-            this.idProcesos[i].setVisible(true);
-            getContentPane().add(this.idProcesos[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(this.procesosLabel.getX(), posY, 200, 30));
-            posY+=20;
+    protected void updateProcessIdsInitiate(){
+        UIEjecucion.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
+        int posY = UIEjecucion.procesosLabel.getY()+20;
+        String aux;
+        for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+            aux = (String)UIEjecucion.labelIdProcesos.get(i);
+//            if(!UIEjecucion.OS.getEstadoProceso(aux).equals("Eliminado")){
+                UIEjecucion.idProcesos[i] = new JLabel();
+                UIEjecucion.idProcesos[i].setText("ID: "+aux+" Estado: "+UIEjecucion.OS.getEstadoProceso(aux));
+                UIEjecucion.idProcesos[i].setVisible(true);
+                getContentPane().add(UIEjecucion.idProcesos[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(this.procesosLabel.getX(), posY, 200, 30));
+                posY+=20;
+//            }
+        }
+    }
+    
+    public static void updateProcessIDs(){
+        if(!UIEjecucion.labelIdProcesos.isEmpty()){
+            String aux;
+            UIEjecucion.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
+            for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+                UIEjecucion.idProcesos[i] = new JLabel();
+                aux = (String)UIEjecucion.labelIdProcesos.get(i);
+                UIEjecucion.idProcesos[i].setText("ID: "+aux+" Estado: "+UIEjecucion.OS.getEstadoProceso(aux));
+            }
         }
     }
     
     private void updateSelectProcPag(Proceso p){
-        this.pagSelecProc = new JLabel[p.getCantidadPag()];
+        UIEjecucion.pagSelecProc = new JLabel[p.getCantidadPag()];
+        int posX = this.selectNumPag.getX();
         int posY = this.selectNumPag.getY()+20;
-        for(int i=0;i<this.pagSelecProc.length;i++){
-            this.pagSelecProc[i] = new JLabel();
-            this.pagSelecProc[i].setText(i+": ");
+        for(int i=0;i<UIEjecucion.pagSelecProc.length;i++){
+            UIEjecucion.pagSelecProc[i] = new JLabel();
+            UIEjecucion.pagSelecProc[i].setText(i+": ");
             if((p.getETP(i)).getP()){
-                this.pagSelecProc[i].setText(this.pagSelecProc[i].getText()+" En memoria");
+                UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En: "+(p.getETP(i).getMarco()*this.OS.getTamMarco()));
             }else{
-                this.pagSelecProc[i].setText(this.pagSelecProc[i].getText()+" En disco");
+                UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En disco");
             }
-            getContentPane().add(this.pagSelecProc[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(this.selectNumPag.getX(), posY, 200, 30));
+            getContentPane().add(UIEjecucion.pagSelecProc[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(posX, posY, 200, 30));
             posY+=20;
-            this.pagSelecProc[i].setVisible(true);
+            UIEjecucion.pagSelecProc[i].setVisible(true);
+            if(i % 28 == 27){
+                posX+=125;
+                posY-=(28*20);
+            }
         }
     }
     
     private void hidePagDeProc(){
-        for(int i=0;i<this.pagSelecProc.length;i++){
-            this.pagSelecProc[i].setVisible(false);
+        for(int i=0;i<UIEjecucion.pagSelecProc.length;i++){
+            UIEjecucion.pagSelecProc[i].setVisible(false);
         }
     }
     
+    
+    private void elimnFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_elimnFieldActionPerformed
+        
+    }//GEN-LAST:event_elimnFieldActionPerformed
+
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
             //Validar campos llenos
         if((this.idField.getText().length()>0)&&(this.tamField.getText().length()>0)){
-            if(this.OS.getProceso(this.idField.getText()) == null){
+            if(UIEjecucion.OS.getProceso(this.idField.getText()) == null){
                     //Parte entera de la división
                 double aux = Integer.parseInt(this.tamField.getText());
                 String probar = this.idField.getText();
-                boolean pass = true;
                 try {
-                    this.OS.crearProceso(probar, aux);
+                    OS.crearProceso(probar, aux);
                     this.idField.setText("");
                     this.tamField.setText("");
-                    this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+                    UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
                     this.updateProcessIds();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
@@ -272,73 +357,35 @@ public class UIEjecucion extends javax.swing.JFrame {
     }//GEN-LAST:event_agregarActionPerformed
 
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
-            //Mostrar labels
-        this.visibleProcessIds(true);
-        this.addLabel.setVisible(true);
-        this.idLabel.setVisible(true);
-        this.tamLabel.setVisible(true);
-        this.suspLabel.setVisible(true);
-        this.verLabel.setVisible(true);
-        this.elimnLabel.setVisible(true);
-        this.unitLabel.setVisible(true);
-            //Mostrar botones
-        this.agregar.setVisible(true);
-        this.susp.setVisible(true);
-        this.ver.setVisible(true);
-        this.eliminar.setVisible(true);
-            //Mostrar Fields
-        this.idField.setVisible(true);
-        this.tamField.setVisible(true);
-        this.suspField.setVisible(true);
-        this.verField.setVisible(true);
-        this.elimnField.setVisible(true);
-            //Ocultar Labels
-        this.selectNumPag.setVisible(false);
-        this.selectProcLabel.setVisible(false);
-        this.selectEstado.setVisible(false);
+        this.modifVer(true);
         this.hidePagDeProc();
-            //Ocultar botones
-        this.volver.setVisible(false);
+        this.verField.setText("");
     }//GEN-LAST:event_volverActionPerformed
 
     private void verActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verActionPerformed
         if(this.verField.getText().length() > 0){
-            Proceso p = this.OS.getProceso(this.verField.getText());
+            Proceso p = UIEjecucion.OS.getProceso(this.verField.getText());
             if(p!=null){
                     //Ocultar labels
                 this.updateSelectProcPag(p);
-                this.visibleProcessIds(false);
-                this.addLabel.setVisible(false);
-                this.idLabel.setVisible(false);
-                this.tamLabel.setVisible(false);
-                this.suspLabel.setVisible(false);
-                this.verLabel.setVisible(false);
-                this.elimnLabel.setVisible(false);
-                this.unitLabel.setVisible(false);
-                    //Ocultar botones
-                this.agregar.setVisible(false);
-                this.susp.setVisible(false);
-                this.ver.setVisible(false);
-                this.eliminar.setVisible(false);
-                    //Ocultar Fields
-                this.idField.setVisible(false);
-                this.tamField.setVisible(false);
-                this.suspField.setVisible(false);
-                this.verField.setVisible(false);
-                this.verField.setText("");
-                this.elimnField.setVisible(false);
-                    //Mostrar Labels
-                this.selectNumPag.setVisible(true);
-                this.selectProcLabel.setVisible(true);
-                this.selectEstado.setVisible(true);
-                this.selecFrag.setVisible(true);
-                    //Mostrar botones
-                this.volver.setVisible(true);
-                    //Mostrar texto
+                this.modifVer(false);
+                    //Editar texto
                 this.selectNumPag.setText("Páginas totales: "+p.getCantidadPag());
-                this.selectProcLabel.setText("ID: "+p.getId());
-                this.selectEstado.setText(""+this.OS.getEstadoProceso(p.getId()));
-                this.selecFrag.setText("Fragmentación: "+p.getFrag()+" bytes");
+                if(p.getTam()/(1024*1024) >= 1){
+                    this.selectTam.setText("Tamaño: "+(p.getTam()/(1024*1024))+" Mb");
+                }else{
+                    this.selectTam.setText("Tamaño: "+(p.getTam()/1024)+" Kb");
+                }
+                this.selectProcLabel.setText("ID: "+p.getIdP());
+                this.selectEstado.setText(""+UIEjecucion.OS.getEstadoProceso(p.getIdP()));
+                if(p.getFrag() < 1024){
+                    this.selectFrag.setText("Fragmentación: "+p.getFrag()+" bytes");
+                }else if(p.getFrag()/1024 < 1024){
+                    this.selectFrag.setText("Fragmentación: "+(p.getFrag()/1024)+" Kb");
+                }else{
+                    this.selectFrag.setText("Fragmentación: "+(p.getFrag()/(1024*1024))+" Mb");
+                }
+                
             }else{
                 System.out.println("Add JOptionPane para fallo en búsqueda");
             }
@@ -346,6 +393,22 @@ public class UIEjecucion extends javax.swing.JFrame {
             System.out.println("Add JOptionPane para campos inválidos");
         }
     }//GEN-LAST:event_verActionPerformed
+
+    private void eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarActionPerformed
+        if(this.elimnField.getText().length() > 0){
+            Proceso p = UIEjecucion.OS.getProceso(this.elimnField.getText());
+            if(p!=null){
+                UIEjecucion.OS.eliminarProceso(p.getIdP());
+                this.updateProcessIds();
+                this.elimnField.setText("");
+                UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+            }else{
+                System.out.println("Add JOptionPane para fallo en búsqueda");
+            }
+        }else{
+            System.out.println("Add JOptionPane para campos inválidos");
+        }
+    }//GEN-LAST:event_eliminarActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addLabel;
@@ -359,12 +422,13 @@ public class UIEjecucion extends javax.swing.JFrame {
     private javax.swing.JLabel marcoLabel;
     private javax.swing.JLabel mempLabel;
     private javax.swing.JLabel memsLabel;
-    private javax.swing.JLabel ocuLabel;
-    private javax.swing.JLabel procesosLabel;
-    private javax.swing.JLabel selecFrag;
+    public static javax.swing.JLabel ocuLabel;
+    private static javax.swing.JLabel procesosLabel;
     private javax.swing.JLabel selectEstado;
+    private javax.swing.JLabel selectFrag;
     private javax.swing.JLabel selectNumPag;
     private javax.swing.JLabel selectProcLabel;
+    private javax.swing.JLabel selectTam;
     private javax.swing.JButton susp;
     private javax.swing.JTextField suspField;
     private javax.swing.JLabel suspLabel;
