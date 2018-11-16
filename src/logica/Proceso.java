@@ -77,6 +77,7 @@ public class Proceso extends Thread{
                 Logger.getLogger(Proceso.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        this.setEstado(false, false, false);
         if(this.tiempoRes != -1){
             OS.sacarFinalizado(this);
         }

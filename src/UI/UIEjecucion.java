@@ -9,8 +9,7 @@ import logica.OS;
 import logica.Proceso;
 
 public class UIEjecucion extends javax.swing.JFrame {
-
-    protected static OS OS;
+    
         //Celdas de memoria
     public static JTextField[] celdas;
         //Label de celdas de memoria
@@ -18,7 +17,6 @@ public class UIEjecucion extends javax.swing.JFrame {
     private static JLabel[] idProcesos;
     private static JLabel[] pagSelecProc;
         //Label de procesos
-    public static LinkedList labelIdProcesos = new LinkedList();
     public static double ocupado;
     
     public UIEjecucion() {
@@ -29,7 +27,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         
         int posX = this.mempLabel.getX()+20;
         int posY = this.mempLabel.getY()+40;
-        double tamMarco = UIEjecucion.OS.getTamMarco();
+        double tamMarco = OS.getTamMarco();
         
         for(int i=0;i<UIEjecucion.celdas.length;i++){
             UIEjecucion.celdas[i].setFocusable(false);
@@ -45,7 +43,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         }
         this.setSize(posX+230 , ((this.mempLabel.getY()+90+(32*20))));
         
-        double aux = this.OS.getTamMP();
+        double aux = OS.getTamMP();
         if(aux/(1024*1024)>=1){
             aux = (aux/(1024*1024));
                 //Está en Mbytes
@@ -56,7 +54,7 @@ public class UIEjecucion extends javax.swing.JFrame {
             this.mempLabel.setText("Memoria Principal: "+aux+" Kb");
         }
         
-        aux = UIEjecucion.OS.getTamMarco();
+        aux = OS.getTamMarco();
         if(aux/(1024*1024)>=1){
             aux = (aux/(1024*1024));
                 //Está en Mbytes
@@ -67,7 +65,7 @@ public class UIEjecucion extends javax.swing.JFrame {
             this.marcoLabel.setText("Tamaño del Marco: "+aux+" Kb");
         }
         
-        aux = UIEjecucion.OS.getTamMS();
+        aux = OS.getTamMS();
         if(aux/(1024*1024*1024)>=1){
             aux = (aux/(1024*1024*1024));
                 //Está en Gbytes
@@ -79,8 +77,8 @@ public class UIEjecucion extends javax.swing.JFrame {
         }
         
         this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
-        this.updateProcessIdsInitiate();
-        UIEjecucion.OS.startSimul();
+        this.updateProcessIds();
+        OS.startSimul();
     }
 
     /**
@@ -255,46 +253,34 @@ public class UIEjecucion extends javax.swing.JFrame {
     }
     
     protected void updateProcessIds(){
-        for(int i=0;i<UIEjecucion.idProcesos.length;i++){
-                UIEjecucion.idProcesos[i].setVisible(false);
+        if(idProcesos != null){
+            for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+                    UIEjecucion.idProcesos[i].setVisible(false);
+            }
         }
-        UIEjecucion.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
+        Object[] aux = OS.procesos.toArray();
+        UIEjecucion.idProcesos = new JLabel[OS.procesos.size()];
         int posY = UIEjecucion.procesosLabel.getY()+20;
-        String aux;
         for(int i=0;i<UIEjecucion.idProcesos.length;i++){
-            aux = (String)UIEjecucion.labelIdProcesos.get(i);
                 UIEjecucion.idProcesos[i] = new JLabel();
-                UIEjecucion.idProcesos[i].setText("ID: "+aux+" Estado: "+UIEjecucion.OS.getEstadoProceso(aux));
+                UIEjecucion.idProcesos[i].setText("ID: "+(((Proceso)aux[i]).getIdP())+" Estado: "+OS.getEstadoProceso((((Proceso)aux[i]).getIdP())));
                 UIEjecucion.idProcesos[i].setVisible(true);
                 getContentPane().add(UIEjecucion.idProcesos[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(this.procesosLabel.getX(), posY, 200, 30));
                 posY+=20;
-        }
-    }
-    
-    protected void updateProcessIdsInitiate(){
-        UIEjecucion.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
-        int posY = UIEjecucion.procesosLabel.getY()+20;
-        String aux;
-        for(int i=0;i<UIEjecucion.idProcesos.length;i++){
-            aux = (String)UIEjecucion.labelIdProcesos.get(i);
-//            if(!UIEjecucion.OS.getEstadoProceso(aux).equals("Eliminado")){
-                UIEjecucion.idProcesos[i] = new JLabel();
-                UIEjecucion.idProcesos[i].setText("ID: "+aux+" Estado: "+UIEjecucion.OS.getEstadoProceso(aux));
-                UIEjecucion.idProcesos[i].setVisible(true);
-                getContentPane().add(UIEjecucion.idProcesos[i], new org.netbeans.lib.awtextra.AbsoluteConstraints(this.procesosLabel.getX(), posY, 200, 30));
-                posY+=20;
-//            }
         }
     }
     
     public static void updateProcessIDs(){
-        if(!UIEjecucion.labelIdProcesos.isEmpty()){
-            String aux;
-            UIEjecucion.idProcesos = new JLabel[UIEjecucion.labelIdProcesos.size()];
+        if(!OS.procesos.isEmpty()){
+            Object[] aux = OS.procesos.toArray();
             for(int i=0;i<UIEjecucion.idProcesos.length;i++){
-                UIEjecucion.idProcesos[i] = new JLabel();
-                aux = (String)UIEjecucion.labelIdProcesos.get(i);
-                UIEjecucion.idProcesos[i].setText("ID: "+aux+" Estado: "+UIEjecucion.OS.getEstadoProceso(aux));
+                if(!(i>(aux.length-1))){
+                    UIEjecucion.idProcesos[i].setText("ID: "+(((Proceso)aux[i]).getIdP())+" Estado: "+OS.getEstadoProceso((((Proceso)aux[i]).getIdP())));
+                    UIEjecucion.idProcesos[i].setVisible(true);
+                }else{
+                    UIEjecucion.idProcesos[i].setText("");
+                    UIEjecucion.idProcesos[i].setVisible(false);
+                }
             }
         }
     }
@@ -307,7 +293,7 @@ public class UIEjecucion extends javax.swing.JFrame {
             UIEjecucion.pagSelecProc[i] = new JLabel();
             UIEjecucion.pagSelecProc[i].setText(i+": ");
             if((p.getETP(i)).getP()){
-                UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En: "+(p.getETP(i).getMarco()*this.OS.getTamMarco()));
+                UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En: "+(p.getETP(i).getMarco()*OS.getTamMarco()));
             }else{
                 UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En disco");
             }
@@ -335,7 +321,7 @@ public class UIEjecucion extends javax.swing.JFrame {
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
             //Validar campos llenos
         if((this.idField.getText().length()>0)&&(this.tamField.getText().length()>0)){
-            if(UIEjecucion.OS.getProceso(this.idField.getText()) == null){
+            if(OS.getProceso(this.idField.getText()) == null){
                     //Parte entera de la división
                 double aux = Integer.parseInt(this.tamField.getText());
                 String probar = this.idField.getText();
@@ -364,7 +350,7 @@ public class UIEjecucion extends javax.swing.JFrame {
 
     private void verActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verActionPerformed
         if(this.verField.getText().length() > 0){
-            Proceso p = UIEjecucion.OS.getProceso(this.verField.getText());
+            Proceso p = OS.getProceso(this.verField.getText());
             if(p!=null){
                     //Ocultar labels
                 this.updateSelectProcPag(p);
@@ -377,7 +363,7 @@ public class UIEjecucion extends javax.swing.JFrame {
                     this.selectTam.setText("Tamaño: "+(p.getTam()/1024)+" Kb");
                 }
                 this.selectProcLabel.setText("ID: "+p.getIdP());
-                this.selectEstado.setText(""+UIEjecucion.OS.getEstadoProceso(p.getIdP()));
+                this.selectEstado.setText(""+OS.getEstadoProceso(p.getIdP()));
                 if(p.getFrag() < 1024){
                     this.selectFrag.setText("Fragmentación: "+p.getFrag()+" bytes");
                 }else if(p.getFrag()/1024 < 1024){
@@ -396,9 +382,9 @@ public class UIEjecucion extends javax.swing.JFrame {
 
     private void eliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_eliminarActionPerformed
         if(this.elimnField.getText().length() > 0){
-            Proceso p = UIEjecucion.OS.getProceso(this.elimnField.getText());
+            Proceso p = OS.getProceso(this.elimnField.getText());
             if(p!=null){
-                UIEjecucion.OS.eliminarProceso(p.getIdP());
+                OS.eliminarProceso(p.getIdP());
                 this.updateProcessIds();
                 this.elimnField.setText("");
                 UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");

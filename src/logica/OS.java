@@ -4,7 +4,7 @@ import UI.UIEjecucion;
 import java.util.LinkedList;
 import java.util.concurrent.Semaphore;
 
-public class OS {
+public class OS{
     
     protected static Marco[] marcos; //Marcos en memoria principal (true = libre; false = ocupado)
     protected static double tamMP; //Tamaño de la memoria principal
@@ -35,31 +35,27 @@ public class OS {
         OS.noInicia = true;
     }
     
-    public void crearProceso(String id, double tam) throws InterruptedException{
+    public static void crearProceso(String id, double tam) throws InterruptedException{
         Proceso p = new Proceso(id, tam, OS.getTamMarco());
         
             //Determinar si es creable el proceso
         if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam()<=OS.getRestanteMs()){ 
             PlanificadorMid.cargarProceso(p); //Crear proceso y asignarle memoria
             UIEjecucion.ocupado += p.getTam();
-            UIEjecucion.labelIdProcesos.add(p.getIdP());
             p.start(); //Iniciar el proceso
             OS.procesos.add(p); //Añadir a la tabla de procesos
-            UIEjecucion.updateProcessIDs();
         }else{
             System.out.println("Add JOptinonPane de ms insuficiente o proceso muy grande");
         }
     }
     
-    public void eliminarProceso(String id){
+    public static void eliminarProceso(String id){
         Proceso p = OS.getProceso(id);
         p.eliminar();
         PlanificadorMid.sacarProcesoMem(p);
         int aux = OS.getProcesoTableIndex(id);
         OS.procesos.remove(aux);
         UIEjecucion.ocupado -= p.getTam();
-        UIEjecucion.labelIdProcesos.remove(aux);
-        UIEjecucion.updateProcessIDs();
     }
     
     protected static void sacarFinalizado(Proceso p){
@@ -68,7 +64,6 @@ public class OS {
         OS.procesos.remove(aux);
         UIEjecucion.ocupado -= p.getTam();
         UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
-        UIEjecucion.labelIdProcesos.remove(aux);
         UIEjecucion.updateProcessIDs();
     }
     
@@ -114,20 +109,20 @@ public class OS {
         OS.procesos.add(aux, p);
     }
     
-    public double getTamMP(){
+    public static double getTamMP(){
         return OS.tamMP;
     }
     
-    public double getTamMS(){
+    public static double getTamMS(){
         return OS.tamMS;
     }
     
-    public int getNumProcesos(){
+    public static int getNumProcesos(){
         return OS.procesos.size();
     }
     
-    public String getEstadoProceso(String i){
-        return this.getProceso(i).getEstado();
+    public static String getEstadoProceso(String i){
+        return OS.getProceso(i).getEstado();
     }
     
     public static double getRestanteMs(){
@@ -140,7 +135,7 @@ public class OS {
         return ocu;
     }
     
-    public void startSimul(){
+    public static void startSimul(){
         OS.noInicia = false;
         OS.sincroStart.release(OS.sincroStart.getQueueLength());
     }

@@ -119,7 +119,7 @@ public class InicializadorMemoria extends javax.swing.JFrame {
                         
                         this.OS = new OS(tamMarco, tamMP, tamMS);
                         
-                        InicializadorProcesos exe = new InicializadorProcesos(this.OS);
+                        InicializadorProcesos exe = new InicializadorProcesos();
                         this.setVisible(false);
                     }else{
                         System.out.println("Add JOptinoPane de tamaño de ms no es potencia de 2");

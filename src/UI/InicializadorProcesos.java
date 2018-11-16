@@ -9,16 +9,15 @@ import logica.OS;
 
 public class InicializadorProcesos extends javax.swing.JFrame {
     
-    public InicializadorProcesos(OS os) {
-        UIEjecucion.OS = os;
+    public InicializadorProcesos() {
         initComponents();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
-        double aux = UIEjecucion.OS.getTamMP();
+        double aux = OS.getTamMP();
         
         //Desplegar arreglo de memoria
-        UIEjecucion.celdas = new JTextField[UIEjecucion.OS.getNumMarcos()];
-        UIEjecucion.labelCeldas = new JLabel[UIEjecucion.OS.getNumMarcos()];
+        UIEjecucion.celdas = new JTextField[OS.getNumMarcos()];
+        UIEjecucion.labelCeldas = new JLabel[OS.getNumMarcos()];
         
             //Inicializar arreglo visual
         for(int i=0;i<UIEjecucion.celdas.length;i++){
@@ -39,7 +38,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
             this.mempLabel.setText("Memoria Principal: "+aux+" Kb");
         }
         
-        aux = UIEjecucion.OS.getTamMarco();
+        aux = OS.getTamMarco();
         if(aux/(1024*1024)>=1){
             aux = (aux/(1024*1024));
                 //Está en Mbytes
@@ -50,7 +49,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
             this.marcoLabel.setText("Tamaño del Marco: "+aux+" Kb");
         }
         
-        aux = UIEjecucion.OS.getTamMS();
+        aux = OS.getTamMS();
         if(aux/(1024*1024*1024)>=1){
             aux = (aux/(1024*1024*1024));
                 //Está en Gbytes
@@ -133,12 +132,12 @@ public class InicializadorProcesos extends javax.swing.JFrame {
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
             //Validar campos llenos
         if((this.idField.getText().length()>0)&&(this.tamField.getText().length()>0)){
-            if(UIEjecucion.OS.getProceso(this.idField.getText()) == null){
+            if(OS.getProceso(this.idField.getText()) == null){
                     //Parte entera de la división
                 double aux = Integer.parseInt(this.tamField.getText());
                 String ingresar = this.idField.getText();
                 try {
-                    UIEjecucion.OS.crearProceso(ingresar, aux);
+                    OS.crearProceso(ingresar, aux);
                     this.idField.setText("");
                     this.tamField.setText("");
                     this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
