@@ -1,21 +1,29 @@
 package logica;
 
-public class Proceso{
+import UI.UIEjecucion;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Proceso extends Thread{
     
-    private ETP[] paginas; //Tabla de páginas
-    private String id; //IDsec del proceso
-        //0: Activo, 1: Bloqueado, 2: Ejecutandose
-    boolean[] estado = {false, false, false};
-    private double tam; //Tamaño del proceso
-    private double frag; //Fragmentación de la última página en bytes
+    private final ETP[] paginas; //Tabla de páginas
+    private final String id; //IDsec del proceso
+        //0: Listo, 1: Bloqueado, 2: Ejecutandose
+    private final boolean[] estado = {false, false, false};
+    private final double tam; //Tamaño del proceso
+    private final double frag; //Fragmentación de la última página en bytes
+    private int tiempoRes;
     
         //Inicialización del proceso con su cantidad de páginas, id, 
-    public Proceso(String id, double tam, double tamPag){
+    protected Proceso(String id, double tam, double tamPag){
         tam = tam*1024;
         int canPag = (int) (tam/tamPag); //Cantidad de páginas
         if(tam % tamPag != 0){ //Fragmentación interna en la última página
             canPag++;
         }
+            //Tiempo de ejecución desde 3 a 5 segundos
+        this.tiempoRes = ((new Random()).nextInt(3)+3)*1000;
         this.paginas = new ETP[canPag];
         this.id = id;
         this.tam = (tam);
@@ -25,21 +33,69 @@ public class Proceso{
         this.frag = (canPag*tamPag) - tam;
     }
     
+    @Override
+    public void run(){
+        int aux;
+        if(OS.noInicia){
+            try {
+                OS.sincroStart.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Proceso.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        while(this.tiempoRes > 0){
+            try {
+                if(this.tiempoRes > 0){
+                    if(!this.estado[0]){ //Si no está en memoria principal y va a ejecutarse
+                        
+                    }
+                    PlanificadorShort.aquireCPU(); //Entra al esperar por el CPU
+                    this.setEstado(true, false, true); //En estado de ejecución
+                    for(int i=0;i<6;i++){ //0.5 segundos en ejecución
+                        if(tiempoRes > 0){
+                            if(this.getCantidadPag() > this.getPaginasEnMp()){ 
+                                aux = (new Random()).nextInt(2);
+                                if(aux == 0){
+                                    System.out.println("Fallo de página");
+                                }
+                            }
+                            Thread.sleep(100); //Espera 0.1 segundos
+                            if(this.tiempoRes > 0){
+                                this.tiempoRes -= 100;
+                            }
+                        }else{
+                            i = 6;
+                        }
+                    }
+                    PlanificadorShort.releaseCPU(); //Libera al CPU antes de bloquearse o salir
+                    if(this.tiempoRes > 0){
+                        this.setEstado(true, true, false); //Se bloquea el proceso pero sigue en mp
+                        
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Proceso.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        if(this.tiempoRes != -1){
+            OS.sacarFinalizado(this);
+        }
+    }
+    
     public int getCantidadPag(){
         return this.paginas.length;
     }
     
         //Setear marco a la ETP
     protected void setMarcoToETP(int numMarco, int numPag){
-        this.paginas[numPag].setP(true);
         this.paginas[numPag].numMar = numMarco;
     }
     
-    protected double getTam(){
+    public double getTam(){
         return this.tam;
     }
     
-    public String getId(){
+    public String getIdP(){
         return this.id;
     }
     
@@ -62,14 +118,18 @@ public class Proceso{
     }
     
     protected String getEstado(){
-        if(this.estado[1] == true){
-            return "Suspendido";
-        }else{
-            if(this.estado[2] == true){
-                return "Ejecutandose";
+        if(this.estado[0]){
+            if(this.estado[1]){
+                return "Bloqueado";
+            }else if(this.estado[2]){
+                return "En ejecución";
             }else{
                 return "Listo";
             }
+        }else if(!this.estado[0]){
+           return "Suspendido";
+        }else{
+            return "Eliminado";
         }
     }
     
@@ -83,4 +143,7 @@ public class Proceso{
         return this.frag;
     }
     
+    protected void eliminar(){
+        this.tiempoRes = -1;
+    }
 }
