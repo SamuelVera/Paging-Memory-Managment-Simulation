@@ -32,6 +32,7 @@ public class OS{
         
         PlanificadorMid.apuntador = 0; //Inicializar planificador de mediano plazo
         PlanificadorShort.state = 1; //Iniciar planificador de corto plazo
+        
         OS.noInicia = true;
     }
     
@@ -39,9 +40,9 @@ public class OS{
         Proceso p = new Proceso(id, tam, OS.getTamMarco());
         
             //Determinar si es creable el proceso
-        if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam()<=OS.getRestanteMs()){ 
+        if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam()<=OS.getDisponibleMs()){ 
             PlanificadorMid.cargarProceso(p); //Crear proceso y asignarle memoria
-            UIEjecucion.ocupado += p.getTam();
+            UIEjecucion.ocupadoMs += p.getTam();
             p.start(); //Iniciar el proceso
             OS.procesos.add(p); //Añadir a la tabla de procesos
         }else{
@@ -49,22 +50,29 @@ public class OS{
         }
     }
     
-    public static void eliminarProceso(String id){
-        Proceso p = OS.getProceso(id);
+    public static void eliminarProceso(Proceso p) throws InterruptedException{
         p.eliminar();
-        PlanificadorMid.sacarProcesoMem(p);
-        int aux = OS.getProcesoTableIndex(id);
-        OS.procesos.remove(aux);
-        UIEjecucion.ocupado -= p.getTam();
-    }
-    
-    protected static void sacarFinalizado(Proceso p){
         PlanificadorMid.sacarProcesoMem(p);
         int aux = OS.getProcesoTableIndex(p.getIdP());
         OS.procesos.remove(aux);
-        UIEjecucion.ocupado -= p.getTam();
-        UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+        UIEjecucion.ocupadoMs -= p.getTam();
+    }
+    
+    protected static void sacarFinalizado(Proceso p) throws InterruptedException{
+        PlanificadorMid.sacarProcesoMem(p);
+        int aux = OS.getProcesoTableIndex(p.getIdP());
+        OS.procesos.remove(aux);
+        UIEjecucion.ocupadoMs -= p.getTam();
+        UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
         UIEjecucion.updateProcessIDs();
+    }
+    
+    public static void suspenderProceso(Proceso p) throws InterruptedException{
+        
+        PlanificadorMid.sacarProcesoMem(p);
+        p.setEstado(false, false, true, false); //Asignar estado de suspendido
+        UIEjecucion.updateProcessIDs();
+        
     }
     
     public static int getNumMarcos(){
@@ -73,6 +81,17 @@ public class OS{
     
     public static double getTamMarco(){
         return OS.tamMarco;
+    }
+    
+        //Hay marcos vacíos y cuantos son
+    protected static int getMarcosVacios(){
+        int cantidad = 0;
+        for(int i=0;i<OS.marcos.length;i++){
+            if(OS.marcos[i].getLibre() == true){
+                cantidad++;
+            }
+        }
+        return cantidad;
     }
     
     public static Proceso getProceso(String i){
@@ -103,12 +122,6 @@ public class OS{
         return -1;
     }
     
-    protected static void actualizarProceso(Proceso p){
-        int aux = OS.getProcesoTableIndex(p.getIdP());
-        OS.procesos.remove(aux);
-        OS.procesos.add(aux, p);
-    }
-    
     public static double getTamMP(){
         return OS.tamMP;
     }
@@ -125,19 +138,28 @@ public class OS{
         return OS.getProceso(i).getEstado();
     }
     
-    public static double getRestanteMs(){
+    protected static double getDisponibleMs(){
         double ocu = 0;
         Object[] aux = OS.procesos.toArray();
         for(int i=0;i<aux.length;i++){
             ocu = ocu + ((Proceso)aux[i]).getTam();
         }
         ocu = OS.tamMS-ocu;
-        return ocu;
+        return OS.getTamMS() - ocu;
+    }
+    
+    protected static double getDisponibleMp(){
+        double ocu = 0;
+        for(int i=0;i<OS.marcos.length;i++){
+            if(!OS.marcos[i].getLibre()){
+                ocu += OS.getTamMarco();
+            }
+        }
+        return OS.getTamMP() - ocu;
     }
     
     public static void startSimul(){
         OS.noInicia = false;
         OS.sincroStart.release(OS.sincroStart.getQueueLength());
     }
-    
 }
