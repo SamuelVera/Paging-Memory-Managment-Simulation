@@ -1,6 +1,7 @@
 package logica;
 
 import UI.UIEjecucion;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,16 +9,17 @@ import java.util.logging.Logger;
 public class Proceso extends Thread{
     
     private final ETP[] paginas; //Tabla de páginas
+    private int punteroCarga; //Puntero de página a ejecutar
     private final String id; //IDsec del proceso
-        //0: Listo, 1: Bloqueado, 2: Ejecutandose
-    private final boolean[] estado = {false, false, false};
+        //0: Listo; 1: Bloqueado; 2: Suspendido; 3: Ejecutandose
+    private final boolean[] estado = {false, false, false, false};
     private final double tam; //Tamaño del proceso
     private final double frag; //Fragmentación de la última página en bytes
     private int tiempoRes;
+    private boolean firstTime;
     
         //Inicialización del proceso con su cantidad de páginas, id, 
     protected Proceso(String id, double tam, double tamPag){
-        tam = tam*1024;
         int canPag = (int) (tam/tamPag); //Cantidad de páginas
         if(tam % tamPag != 0){ //Fragmentación interna en la última página
             canPag++;
@@ -31,6 +33,8 @@ public class Proceso extends Thread{
             this.paginas[i] = new ETP(i,this.id);
         }
         this.frag = (canPag*tamPag) - tam;
+        this.firstTime = true;
+        this.punteroCarga = 0;
     }
     
     @Override
@@ -46,41 +50,108 @@ public class Proceso extends Thread{
         while(this.tiempoRes > 0){
             try {
                 if(this.tiempoRes > 0){
-                    if(!this.estado[0]){ //Si no está en memoria principal y va a ejecutarse
-                        
+                    this.setEstado(true, false, false, false); //Dar estado de listo
+                    UIEjecucion.updateProcessIDs(); //Actualización visual
+                    if(this.firstTime){//La primera vez que entra adquiere el primer puesto
+                        PlanificadorShort.aquireCPUPrio(); //Entra al esperar por el CPU con prioridad
+                        this.firstTime = false;
+                    }else{
+                        PlanificadorShort.aquireCPU(); //Entra a esperar por el CPU
                     }
-                    PlanificadorShort.aquireCPU(); //Entra al esperar por el CPU
-                    this.setEstado(true, false, true); //En estado de ejecución
-                    for(int i=0;i<6;i++){ //0.5 segundos en ejecución
-                        if(tiempoRes > 0){
-                            if(this.getCantidadPag() > this.getPaginasEnMp()){ 
-                                aux = (new Random()).nextInt(2);
-                                if(aux == 0){
-                                    System.out.println("Fallo de página");
-                                }
-                            }
-                            Thread.sleep(100); //Espera 0.1 segundos
+                        //Si al menos la mitad de sus páginas no está en memoria principal y va a ejecutarse
+                    if(this.getPaginasEnMp() < ((this.getCantidadPag()/2)+1)){ 
+                        this.cargarPag();
+                    }
+                    this.setEstado(false, false, false, true); //En estado de ejecución
+                    UIEjecucion.updateProcessIDs(); //Actualización visual
+                    
+                        //Rutina de ejecución
+                    for(int i=0;i<4;i++){ //0.5 segundos en ejecución
+                        if(this.tiempoRes > 0 && (this.getPaginasEnMp()>0)){
+                            this.referenciaPag();
+                            Thread.sleep(2000); //Espera 0.1 segundos
                             if(this.tiempoRes > 0){
-                                this.tiempoRes -= 100;
+                                this.tiempoRes -= 250;
                             }
                         }else{
-                            i = 6;
+                            i = 2;
                         }
                     }
+                    
                     PlanificadorShort.releaseCPU(); //Libera al CPU antes de bloquearse o salir
-                    if(this.tiempoRes > 0){
-                        this.setEstado(true, true, false); //Se bloquea el proceso pero sigue en mp
-                        
+                    if(this.tiempoRes > 0 && (this.getPaginasEnMp()>0)){
+                        this.setEstado(false, true, false, false); //Se bloquea por E/S
+                        UIEjecucion.updateProcessIDs(); //Actualización visual
+                        aux = ((new Random()).nextInt(3)+2)*1000; //Tiempo de bloqueo de 2 a 4 segundos
+                        if(aux > this.tiempoRes){
+                            aux = this.tiempoRes; //Esperar por el tiempo que le queda
+                            this.tiempoRes = 0; 
+                        }else{
+                            this.tiempoRes -= aux;
+                        }
+                        Thread.sleep(aux); //Tiempo de bloqueo
+                            //Cambio de estado al desbloquearse
+                        if(this.getPaginasEnMp() == 0 ){ //Si no tiene páginas en mp está suspendido
+                            this.setEstado(false, false, true, false); //Estado supendido
+                        }else{
+                            this.setEstado(true, false, false, false); //Estado Listo
                     }
+                    }else{
+                        this.setEstado(false, false, true, false); //Estado supendido
+                        Thread.sleep(2000); //2 segundos suspendido
+                    }
+                    
+                    UIEjecucion.updateProcessIDs(); //Actualización visual
                 }
             } catch (InterruptedException ex) {
                 Logger.getLogger(Proceso.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        this.setEstado(false, false, false);
-        if(this.tiempoRes != -1){
+        this.setEstado(false, false, false, false); //Sale 
+        UIEjecucion.updateProcessIDs();
+        if(this.tiempoRes != -1){ try {
+            //Si su tiempo restante es -1 salió por expulsión del usuario
             OS.sacarFinalizado(this);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Proceso.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+    }
+
+        //Se actualiza referencia a una página o se produce un fallo de página
+    private void referenciaPag() throws InterruptedException{
+        if(this.getETP(this.punteroCarga).getP()){
+            this.setU(this.punteroCarga, true);
+        }else{  //Se pagina por adelantado hasta la mitad de las páginas que no esten en mp
+            this.cargarPag();
+        }
+        this.punteroCarga = ((this.punteroCarga+1)%this.paginas.length);
+    }
+    
+        //Cargar páginas de un proceso que estaba fuera de mp
+    private void cargarPag() throws InterruptedException{
+            //Deben cargarse la mitad de las páginas a partir del puntero
+        LinkedList aux = new LinkedList();
+        Object[] aux12;
+        int[] aux2;
+        int apuntador = this.punteroCarga;
+        for(int i=0;i<this.getCantidadPag();i++){
+            if(!this.paginas[apuntador].getP()){
+                aux.add(apuntador);
+                if(aux.size()==((this.getCantidadPag()/2)+1)){
+                    break;
+                }
+            }
+            apuntador = ((apuntador+1)%this.paginas.length);
+        }
+        aux12 = aux.toArray();
+        aux2 = new int[aux12.length];
+        for(int i=0;i<aux12.length;i++){
+            aux2[i] = (int)aux12[i];
+        }
+        PlanificadorMid.escribirPag(this, aux2); //Escribir página
+        this.setEstado(false, false, false, true); //En estado de ejecución
+        UIEjecucion.updateProcessIDs(); //Actualización visual
     }
     
     public int getCantidadPag(){
@@ -120,24 +191,23 @@ public class Proceso extends Thread{
     
     protected String getEstado(){
         if(this.estado[0]){
-            if(this.estado[1]){
-                return "Bloqueado";
-            }else if(this.estado[2]){
-                return "En ejecución";
-            }else{
-                return "Listo";
-            }
-        }else if(!this.estado[0]){
-           return "Suspendido";
+            return "Listo";
+        }else if(this.estado[1]){
+            return "Bloqueado";
+        }else if(this.estado[2]){
+            return "Suspendido";
+        }else if(this.estado[3]){
+            return "En ejecución";
         }else{
             return "Eliminado";
         }
     }
     
-    protected void setEstado(boolean i0, boolean i1, boolean i2){
+    protected void setEstado(boolean i0, boolean i1, boolean i2, boolean i3){
         this.estado[0] = i0;
         this.estado[1] = i1;
         this.estado[2] = i2;
+        this.estado[3] = i3;
     }
     
     public double getFrag(){
@@ -147,4 +217,7 @@ public class Proceso extends Thread{
     protected void eliminar(){
         this.tiempoRes = -1;
     }
+    
+    
+    
 }
