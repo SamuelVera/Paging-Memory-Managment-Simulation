@@ -29,6 +29,9 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         mpField = new javax.swing.JTextField();
         msField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
+        unitMarco = new javax.swing.JComboBox<>();
+        unitMp = new javax.swing.JComboBox<>();
+        unitMs = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -41,26 +44,50 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         });
         getContentPane().add(iniciar, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 250, -1, -1));
 
-        jLabel3.setText("Kb. Tamaño de M. Principal");
-        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 120, 170, 20));
+        jLabel3.setText(" Tamaño de M. Principal");
+        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 120, 150, 20));
 
-        jLabel9.setText("Mb. Tamaño de M. Secundaria");
-        getContentPane().add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 180, 170, 20));
+        jLabel9.setText("Tamaño de M. Secundaria");
+        getContentPane().add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 180, 150, 20));
 
-        jLabel10.setText("Kb. Tamaño de página/marco");
-        getContentPane().add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 60, 170, 20));
+        jLabel10.setText("Tamaño de página/marco");
+        getContentPane().add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 60, 150, 20));
 
         paginaField.setText("1");
+        paginaField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                paginaFieldKeyTyped(evt);
+            }
+        });
         getContentPane().add(paginaField, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 60, 140, 30));
 
         mpField.setText("16");
+        mpField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                mpFieldKeyTyped(evt);
+            }
+        });
         getContentPane().add(mpField, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 120, 140, -1));
 
         msField.setText("1");
+        msField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                msFieldKeyTyped(evt);
+            }
+        });
         getContentPane().add(msField, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 180, 140, -1));
 
         jLabel1.setText("Los números ingresados deben ser potencias de 2");
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, 310, 20));
+
+        unitMarco.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Kb", "Mb" }));
+        getContentPane().add(unitMarco, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 60, -1, -1));
+
+        unitMp.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Kb", "Mb" }));
+        getContentPane().add(unitMp, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 120, -1, -1));
+
+        unitMs.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Mb", "Gb" }));
+        getContentPane().add(unitMs, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 180, -1, -1));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -86,36 +113,66 @@ public class InicializadorMemoria extends javax.swing.JFrame {
                 //Validar tamMarco
             tamMarco = Integer.parseInt(this.paginaField.getText());
             pasar = this.isPow(tamMarco);
-            
+            if(tamMarco <= 0){
+                System.out.println("Add JOptionPane de tamaño de marco negativo");
+                return;
+            }
             if(pasar){
                 tamMP = Integer.parseInt(this.mpField.getText());
                 pasar = this.isPow(tamMP);
-                
+                if(tamMP <= 0){
+                    System.out.println("Add JOptionPane de tamaño de mp negativo");
+                    return;
+                }
                 if(pasar){
                     
                     tamMS = Integer.parseInt(this.msField.getText());
                     pasar = this.isPow(tamMS);
-
+                    
+                    if(tamMS <= 0){
+                        System.out.println("Add JOptionPane de tamaño de ms negativo");
+                        return;
+                    }
+                    
                     if(pasar){
-                            //Verificar que mp no es mayor a ms
-                        if((tamMP*1024) >= (tamMS*1024*1024)){
-                            System.out.println("Add JOptionPane de mp es mayor a mp");
-                            return;
+                        String aux = this.unitMs.getItemAt(this.unitMs.getSelectedIndex());
+                        
+                        if(aux.equals("Mb")){
+                            tamMS = (tamMS*1024*1024); //Pasar de Mb a bytes
+                        }else{
+                            tamMS = (tamMS*1024*1024*1024); //Pasar de Gb a bytes
                         }
-                            //Verificar que el número de marcos es mayor o igual a 16
-                        if((tamMarco*16) > tamMP){
-                            System.out.println("Add JOptionPane de el tamaño de página es muy grande para la mp");
-                            return;
+                        
+                        aux = this.unitMp.getItemAt(this.unitMp.getSelectedIndex());
+                        
+                        if(aux.equals("Kb")){
+                            tamMP = (tamMP*1024); //Pasar de Kb a bytes
+                        }else{
+                            tamMP = (tamMP*1024*1024); //Pasar de Mb a bytes
                         }
-                            //Verificar que el número de marcos es menor o igual a 256
-                        if((tamMarco*256) < tamMP){
-                            System.out.println("Add JOptionPane de el tamaño de página es muy pequeño para la mp");
+                        
+                        if(tamMP > tamMS){
+                            System.out.println("Add JOptionPane de memoria principal es más grande que secundaria");
                             return;
                         }
                         
-                        tamMarco = tamMarco*1024; //Trabajar en bytes
-                        tamMP = tamMP*1024; //Trabajar en bytes
-                        tamMS = tamMS*1024*1024; //Trabajar en bytes
+                        aux = this.unitMarco.getItemAt(this.unitMarco.getSelectedIndex());
+                        
+                        if(aux.equals("Kb")){
+                            tamMarco = (tamMarco*1024); //Pasar de Kb a bytes
+                        }else{
+                            tamMarco = (tamMarco*1024*1024); //Pasar de Mb a bytes
+                        }
+                        
+                        if(tamMP/tamMarco < 16){
+                            System.out.println("Add JOptionPane de tamaño de marco muy grande");
+                            return;
+                        }
+                        
+                        if(tamMP/tamMarco > 256){
+                            System.out.println("Add JOptionPane de marco muy pequeño");
+                            return;
+                        }
                         
                         this.OS = new OS(tamMarco, tamMP, tamMS);
                         
@@ -135,6 +192,33 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         }
         
     }//GEN-LAST:event_iniciarActionPerformed
+
+    private void paginaFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_paginaFieldKeyTyped
+        char aux = evt.getKeyChar();
+        if(Character.isLetter(aux)){
+            evt.consume();
+            System.out.println("Add JOption de presionaste un char");
+            return;
+        }
+    }//GEN-LAST:event_paginaFieldKeyTyped
+
+    private void mpFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mpFieldKeyTyped
+        char aux = evt.getKeyChar();
+        if(Character.isLetter(aux)){
+            evt.consume();
+            System.out.println("Add JOption de presionaste un char");
+            return;
+        }
+    }//GEN-LAST:event_mpFieldKeyTyped
+
+    private void msFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_msFieldKeyTyped
+        char aux = evt.getKeyChar();
+        if(Character.isLetter(aux)){
+            evt.consume();
+            System.out.println("Add JOption de presionaste un char");
+            return;
+        }
+    }//GEN-LAST:event_msFieldKeyTyped
 
     /**
      * @param args the command line arguments
@@ -181,5 +265,8 @@ public class InicializadorMemoria extends javax.swing.JFrame {
     private javax.swing.JTextField mpField;
     private javax.swing.JTextField msField;
     private javax.swing.JTextField paginaField;
+    private javax.swing.JComboBox<String> unitMarco;
+    private javax.swing.JComboBox<String> unitMp;
+    private javax.swing.JComboBox<String> unitMs;
     // End of variables declaration//GEN-END:variables
 }

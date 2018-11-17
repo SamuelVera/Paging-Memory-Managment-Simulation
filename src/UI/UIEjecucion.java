@@ -1,6 +1,5 @@
 package UI;
 
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -12,12 +11,16 @@ public class UIEjecucion extends javax.swing.JFrame {
     
         //Celdas de memoria
     public static JTextField[] celdas;
+        //Proceso en visualización
+    private static Proceso actual;
+    private static boolean seeing = false;
         //Label de celdas de memoria
     public static JLabel[] labelCeldas;
     private static JLabel[] idProcesos;
     private static JLabel[] pagSelecProc;
         //Label de procesos
-    public static double ocupado;
+    public static double ocupadoMs;
+    public static double ocupadoMp;
     
     public UIEjecucion() {
         
@@ -76,7 +79,7 @@ public class UIEjecucion extends javax.swing.JFrame {
             this.memsLabel.setText("Memoria Secundaria: "+aux+" Mb");
         }
         
-        this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+        UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
         this.updateProcessIds();
         OS.startSimul();
     }
@@ -107,8 +110,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         tamLabel = new javax.swing.JLabel();
         tamField = new javax.swing.JTextField();
         agregar = new javax.swing.JButton();
-        unitLabel = new javax.swing.JLabel();
-        ocuLabel = new javax.swing.JLabel();
+        ocuMsLabel = new javax.swing.JLabel();
         verLabel = new javax.swing.JLabel();
         ver = new javax.swing.JButton();
         verField = new javax.swing.JTextField();
@@ -118,6 +120,8 @@ public class UIEjecucion extends javax.swing.JFrame {
         selectEstado = new javax.swing.JLabel();
         selectFrag = new javax.swing.JLabel();
         selectTam = new javax.swing.JLabel();
+        unitProTam = new javax.swing.JComboBox<>();
+        ocuMpLabel = new javax.swing.JLabel();
 
         jLabel3.setText("jLabel3");
 
@@ -128,23 +132,17 @@ public class UIEjecucion extends javax.swing.JFrame {
         getContentPane().add(procesosLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 60, 20));
 
         mempLabel.setText("Memoria Principal:");
-        getContentPane().add(mempLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 10, 230, 20));
+        getContentPane().add(mempLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 10, 230, 20));
 
         marcoLabel.setText("Tamaño del Marco:");
-        getContentPane().add(marcoLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 30, 220, 20));
+        getContentPane().add(marcoLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 10, 220, 20));
 
         memsLabel.setText("Memoria Secundaria:");
-        getContentPane().add(memsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 10, 230, 20));
+        getContentPane().add(memsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 10, 230, 20));
 
         elimnLabel.setText("Eliminar por ID:");
-        getContentPane().add(elimnLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 540, 130, 20));
-
-        elimnField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                elimnFieldActionPerformed(evt);
-            }
-        });
-        getContentPane().add(elimnField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 540, 140, -1));
+        getContentPane().add(elimnLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 610, 130, 20));
+        getContentPane().add(elimnField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 610, 140, -1));
 
         eliminar.setText("Eliminar");
         eliminar.addActionListener(new java.awt.event.ActionListener() {
@@ -152,25 +150,36 @@ public class UIEjecucion extends javax.swing.JFrame {
                 eliminarActionPerformed(evt);
             }
         });
-        getContentPane().add(eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 540, 90, -1));
+        getContentPane().add(eliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 610, 90, -1));
 
         suspLabel.setText("Suspender por ID:");
-        getContentPane().add(suspLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 480, 130, 20));
-        getContentPane().add(suspField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 480, 140, -1));
+        getContentPane().add(suspLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 550, 130, 20));
+        getContentPane().add(suspField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 550, 140, -1));
 
         susp.setText("Suspender");
-        getContentPane().add(susp, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 480, 90, -1));
+        susp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                suspActionPerformed(evt);
+            }
+        });
+        getContentPane().add(susp, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 550, 90, -1));
 
         addLabel.setText("Añadir:");
-        getContentPane().add(addLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 390, 60, 20));
+        getContentPane().add(addLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 460, 60, 20));
 
         idLabel.setText("ID:");
-        getContentPane().add(idLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 420, 50, 20));
-        getContentPane().add(idField, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 420, 240, -1));
+        getContentPane().add(idLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 490, 50, 20));
+        getContentPane().add(idField, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 490, 240, -1));
 
         tamLabel.setText("Tamaño del proceso:");
-        getContentPane().add(tamLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, 120, 20));
-        getContentPane().add(tamField, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 450, 160, -1));
+        getContentPane().add(tamLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 520, 120, 20));
+
+        tamField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                tamFieldKeyTyped(evt);
+            }
+        });
+        getContentPane().add(tamField, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 520, 160, -1));
 
         agregar.setText("Añadir");
         agregar.addActionListener(new java.awt.event.ActionListener() {
@@ -178,16 +187,13 @@ public class UIEjecucion extends javax.swing.JFrame {
                 agregarActionPerformed(evt);
             }
         });
-        getContentPane().add(agregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 420, 80, -1));
+        getContentPane().add(agregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 490, 80, -1));
 
-        unitLabel.setText("Kb");
-        getContentPane().add(unitLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 450, 80, 20));
-
-        ocuLabel.setText("Espacio ocupado:");
-        getContentPane().add(ocuLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 30, 230, 20));
+        ocuMsLabel.setText("Espacio ocupado:");
+        getContentPane().add(ocuMsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 30, 230, 20));
 
         verLabel.setText("Ver por ID:");
-        getContentPane().add(verLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 510, 130, 20));
+        getContentPane().add(verLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 580, 130, 20));
 
         ver.setText("Ver Datos");
         ver.addActionListener(new java.awt.event.ActionListener() {
@@ -195,8 +201,8 @@ public class UIEjecucion extends javax.swing.JFrame {
                 verActionPerformed(evt);
             }
         });
-        getContentPane().add(ver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 510, 90, -1));
-        getContentPane().add(verField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 510, 140, -1));
+        getContentPane().add(ver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 580, 90, -1));
+        getContentPane().add(verField, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 580, 140, -1));
 
         volver.setText("Volver");
         volver.addActionListener(new java.awt.event.ActionListener() {
@@ -204,12 +210,18 @@ public class UIEjecucion extends javax.swing.JFrame {
                 volverActionPerformed(evt);
             }
         });
-        getContentPane().add(volver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 540, 90, -1));
+        getContentPane().add(volver, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 550, 90, -1));
         getContentPane().add(selectProcLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 210, 20));
         getContentPane().add(selectNumPag, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 90, 210, 20));
         getContentPane().add(selectEstado, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 210, 20));
         getContentPane().add(selectFrag, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, 210, 20));
         getContentPane().add(selectTam, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 30, 210, 20));
+
+        unitProTam.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Kb", "Mb" }));
+        getContentPane().add(unitProTam, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 520, -1, -1));
+
+        ocuMpLabel.setText("Espacio ocupado:");
+        getContentPane().add(ocuMpLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 30, 220, 20));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -229,7 +241,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         this.verLabel.setVisible(show);
         this.procesosLabel.setVisible(show);
         this.elimnLabel.setVisible(show);
-        this.unitLabel.setVisible(show);
+        this.unitProTam.setVisible(show);
             //Ocultar botones
         this.agregar.setVisible(show);
         this.susp.setVisible(show);
@@ -271,29 +283,44 @@ public class UIEjecucion extends javax.swing.JFrame {
     }
     
     public static void updateProcessIDs(){
-        if(!OS.procesos.isEmpty()){
-            Object[] aux = OS.procesos.toArray();
-            for(int i=0;i<UIEjecucion.idProcesos.length;i++){
-                if(!(i>(aux.length-1))){
-                    UIEjecucion.idProcesos[i].setText("ID: "+(((Proceso)aux[i]).getIdP())+" Estado: "+OS.getEstadoProceso((((Proceso)aux[i]).getIdP())));
-                    UIEjecucion.idProcesos[i].setVisible(true);
-                }else{
-                    UIEjecucion.idProcesos[i].setText("");
-                    UIEjecucion.idProcesos[i].setVisible(false);
+        if(!UIEjecucion.seeing){
+            if(!OS.procesos.isEmpty()){
+                Object[] aux = OS.procesos.toArray();
+                for(int i=0;i<UIEjecucion.idProcesos.length;i++){
+                    if(UIEjecucion.idProcesos[i]!=null){
+                        if(!(i>(aux.length-1)) && !((Proceso)aux[i]).getIdP().equals("Eliminado")){
+                            UIEjecucion.idProcesos[i].setText("ID: "+(((Proceso)aux[i]).getIdP())+" Estado: "+OS.getEstadoProceso((((Proceso)aux[i]).getIdP())));
+                            UIEjecucion.idProcesos[i].setVisible(true);
+                        }else{
+                            if(UIEjecucion.idProcesos[i] != null){
+                                UIEjecucion.idProcesos[i].setText("");
+                                UIEjecucion.idProcesos[i].setVisible(false);
+                            }
+                        }
+                    }
                 }
             }
+        }else{
+            for(int i=0;i<UIEjecucion.pagSelecProc.length;i++){
+                UIEjecucion.pagSelecProc[i].setText(i+": ");
+                if((UIEjecucion.actual.getETP(i)).getP()){
+                    UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En: "+(UIEjecucion.actual.getETP(i).getMarco()*OS.getTamMarco()));
+                }else{
+                    UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En disco");
+                }
+            }   
         }
     }
     
-    private void updateSelectProcPag(Proceso p){
-        UIEjecucion.pagSelecProc = new JLabel[p.getCantidadPag()];
+    private void updateSelectProcPag(){
+        UIEjecucion.pagSelecProc = new JLabel[UIEjecucion.actual.getCantidadPag()];
         int posX = this.selectNumPag.getX();
         int posY = this.selectNumPag.getY()+20;
         for(int i=0;i<UIEjecucion.pagSelecProc.length;i++){
             UIEjecucion.pagSelecProc[i] = new JLabel();
             UIEjecucion.pagSelecProc[i].setText(i+": ");
-            if((p.getETP(i)).getP()){
-                UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En: "+(p.getETP(i).getMarco()*OS.getTamMarco()));
+            if((UIEjecucion.actual.getETP(i)).getP()){
+                UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En: "+(UIEjecucion.actual.getETP(i).getMarco()*OS.getTamMarco()));
             }else{
                 UIEjecucion.pagSelecProc[i].setText(UIEjecucion.pagSelecProc[i].getText()+" En disco");
             }
@@ -312,12 +339,7 @@ public class UIEjecucion extends javax.swing.JFrame {
             UIEjecucion.pagSelecProc[i].setVisible(false);
         }
     }
-    
-    
-    private void elimnFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_elimnFieldActionPerformed
-        
-    }//GEN-LAST:event_elimnFieldActionPerformed
-
+       
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
             //Validar campos llenos
         if((this.idField.getText().length()>0)&&(this.tamField.getText().length()>0)){
@@ -325,11 +347,22 @@ public class UIEjecucion extends javax.swing.JFrame {
                     //Parte entera de la división
                 double aux = Integer.parseInt(this.tamField.getText());
                 String probar = this.idField.getText();
+                if(aux <= 0){
+                    System.out.println("Add JOptionPane de tamaño proceso negativo");
+                    return;
+                }
                 try {
+                    String aux2 = this.unitProTam.getItemAt(this.unitProTam.getSelectedIndex());
+                        
+                    if(aux2.equals("Mb")){
+                        aux = (aux*1024*1024); //Pasar de Mb a bytes
+                    }else{
+                        aux = (aux*1024); //Pasar de Kb a bytes
+                    }
                     OS.crearProceso(probar, aux);
                     this.idField.setText("");
                     this.tamField.setText("");
-                    UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+                    UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
                     this.updateProcessIds();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
@@ -345,33 +378,35 @@ public class UIEjecucion extends javax.swing.JFrame {
     private void volverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_volverActionPerformed
         this.modifVer(true);
         this.hidePagDeProc();
+        UIEjecucion.seeing = false;
+        UIEjecucion.updateProcessIDs();
         this.verField.setText("");
     }//GEN-LAST:event_volverActionPerformed
 
     private void verActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verActionPerformed
         if(this.verField.getText().length() > 0){
-            Proceso p = OS.getProceso(this.verField.getText());
-            if(p!=null){
+            UIEjecucion.actual = OS.getProceso(this.verField.getText());
+            if(UIEjecucion.actual!=null){
                     //Ocultar labels
-                this.updateSelectProcPag(p);
-                this.modifVer(false);
+                UIEjecucion.seeing = true;
+                this.updateSelectProcPag();
+                this.modifVer(false);                
                     //Editar texto
-                this.selectNumPag.setText("Páginas totales: "+p.getCantidadPag());
-                if(p.getTam()/(1024*1024) >= 1){
-                    this.selectTam.setText("Tamaño: "+(p.getTam()/(1024*1024))+" Mb");
+                this.selectNumPag.setText("Páginas totales: "+UIEjecucion.actual.getCantidadPag());
+                if(UIEjecucion.actual.getTam()/(1024*1024) >= 1){
+                    this.selectTam.setText("Tamaño: "+(UIEjecucion.actual.getTam()/(1024*1024))+" Mb");
                 }else{
-                    this.selectTam.setText("Tamaño: "+(p.getTam()/1024)+" Kb");
+                    this.selectTam.setText("Tamaño: "+(UIEjecucion.actual.getTam()/1024)+" Kb");
                 }
-                this.selectProcLabel.setText("ID: "+p.getIdP());
-                this.selectEstado.setText(""+OS.getEstadoProceso(p.getIdP()));
-                if(p.getFrag() < 1024){
-                    this.selectFrag.setText("Fragmentación: "+p.getFrag()+" bytes");
-                }else if(p.getFrag()/1024 < 1024){
-                    this.selectFrag.setText("Fragmentación: "+(p.getFrag()/1024)+" Kb");
+                this.selectProcLabel.setText("ID: "+UIEjecucion.actual.getIdP());
+                this.selectEstado.setText(""+OS.getEstadoProceso(UIEjecucion.actual.getIdP()));
+                if(UIEjecucion.actual.getFrag() < 1024){
+                    this.selectFrag.setText("Fragmentación: "+UIEjecucion.actual.getFrag()+" bytes");
+                }else if(UIEjecucion.actual.getFrag()/1024 < 1024){
+                    this.selectFrag.setText("Fragmentación: "+(UIEjecucion.actual.getFrag()/1024)+" Kb");
                 }else{
-                    this.selectFrag.setText("Fragmentación: "+(p.getFrag()/(1024*1024))+" Mb");
+                    this.selectFrag.setText("Fragmentación: "+(UIEjecucion.actual.getFrag()/(1024*1024))+" Mb");
                 }
-                
             }else{
                 System.out.println("Add JOptionPane para fallo en búsqueda");
             }
@@ -384,10 +419,14 @@ public class UIEjecucion extends javax.swing.JFrame {
         if(this.elimnField.getText().length() > 0){
             Proceso p = OS.getProceso(this.elimnField.getText());
             if(p!=null){
-                OS.eliminarProceso(p.getIdP());
+                try {
+                    OS.eliminarProceso(p);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 this.updateProcessIds();
                 this.elimnField.setText("");
-                UIEjecucion.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupado/(1024*1024))+" Mb");
+                UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
             }else{
                 System.out.println("Add JOptionPane para fallo en búsqueda");
             }
@@ -395,6 +434,35 @@ public class UIEjecucion extends javax.swing.JFrame {
             System.out.println("Add JOptionPane para campos inválidos");
         }
     }//GEN-LAST:event_eliminarActionPerformed
+
+    private void tamFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tamFieldKeyTyped
+        char aux = evt.getKeyChar();
+        if(Character.isLetter(aux)){
+            evt.consume();
+            System.out.println("Add JOption de presionaste un char");
+            return;
+        }
+    }//GEN-LAST:event_tamFieldKeyTyped
+
+    private void suspActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_suspActionPerformed
+        if(this.suspField.getText().length() > 0){
+            Proceso p = OS.getProceso(this.suspField.getText());
+            if(p!=null){
+                try {
+                    OS.suspenderProceso(p);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                this.updateProcessIds();
+                UIEjecucion.updateProcessIDs();
+                this.suspField.setText("");
+            }else{
+                System.out.println("Add JOptionPane para fallo en búsqueda");
+            }
+        }else{
+            System.out.println("Add JOptionPane para campos inválidos");
+        }
+    }//GEN-LAST:event_suspActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addLabel;
@@ -408,7 +476,8 @@ public class UIEjecucion extends javax.swing.JFrame {
     private javax.swing.JLabel marcoLabel;
     private javax.swing.JLabel mempLabel;
     private javax.swing.JLabel memsLabel;
-    public static javax.swing.JLabel ocuLabel;
+    public static javax.swing.JLabel ocuMpLabel;
+    public static javax.swing.JLabel ocuMsLabel;
     private static javax.swing.JLabel procesosLabel;
     private javax.swing.JLabel selectEstado;
     private javax.swing.JLabel selectFrag;
@@ -420,7 +489,7 @@ public class UIEjecucion extends javax.swing.JFrame {
     private javax.swing.JLabel suspLabel;
     private javax.swing.JTextField tamField;
     private javax.swing.JLabel tamLabel;
-    private javax.swing.JLabel unitLabel;
+    private javax.swing.JComboBox<String> unitProTam;
     private javax.swing.JButton ver;
     private javax.swing.JTextField verField;
     private javax.swing.JLabel verLabel;
