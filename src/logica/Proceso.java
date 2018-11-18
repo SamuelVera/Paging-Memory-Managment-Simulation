@@ -60,7 +60,7 @@ public class Proceso extends Thread{
                     }
                         //Si al menos la mitad de sus páginas no está en memoria principal y va a ejecutarse
                     if(this.getPaginasEnMp() < ((this.getCantidadPag()/2)+1)){ 
-                        this.cargarPag();
+                        this.cargarPag(2);
                     }
                     this.setEstado(false, false, false, true); //En estado de ejecución
                     UIEjecucion.updateProcessIDs(); //Actualización visual
@@ -74,7 +74,7 @@ public class Proceso extends Thread{
                                 this.tiempoRes -= 250;
                             }
                         }else{
-                            i = 2;
+                            i = 4;
                         }
                     }
                     
@@ -93,15 +93,16 @@ public class Proceso extends Thread{
                             //Cambio de estado al desbloquearse
                         if(this.getPaginasEnMp() == 0 ){ //Si no tiene páginas en mp está suspendido
                             this.setEstado(false, false, true, false); //Estado supendido
+                            UIEjecucion.updateProcessIDs();
                         }else{
                             this.setEstado(true, false, false, false); //Estado Listo
-                    }
+                            UIEjecucion.updateProcessIDs();
+                        }
                     }else{
                         this.setEstado(false, false, true, false); //Estado supendido
+                        UIEjecucion.updateProcessIDs();
                         Thread.sleep(2000); //2 segundos suspendido
                     }
-                    
-                    UIEjecucion.updateProcessIDs(); //Actualización visual
                 }
             } catch (InterruptedException ex) {
                 Logger.getLogger(Proceso.class.getName()).log(Level.SEVERE, null, ex);
@@ -118,38 +119,46 @@ public class Proceso extends Thread{
         }
     }
 
-        //Se actualiza referencia a una página o se produce un fallo de página
+        //Se referencian las próximas 4 páginas
+        //Se actualiza su referencia
+        //O se produce un fallo de página
     private void referenciaPag() throws InterruptedException{
-        if(this.getETP(this.punteroCarga).getP()){
-            this.setU(this.punteroCarga, true);
-        }else{  //Se pagina por adelantado hasta la mitad de las páginas que no esten en mp
-            this.cargarPag();
+        for(int i=0;i<4;i++){
+            if(this.getETP(this.punteroCarga).getP()){
+                this.setU(this.punteroCarga, true);
+            }else{  //Se pagina por adelantado un cuarto o menos de las páginas que no esten en mp
+                this.cargarPag(4);
+            }
+            this.punteroCarga = ((this.punteroCarga+1)%this.paginas.length);
         }
-        this.punteroCarga = ((this.punteroCarga+1)%this.paginas.length);
     }
     
         //Cargar páginas de un proceso que estaba fuera de mp
-    private void cargarPag() throws InterruptedException{
+    private void cargarPag(int factor) throws InterruptedException{
             //Deben cargarse la mitad de las páginas a partir del puntero
         LinkedList aux = new LinkedList();
-        Object[] aux12;
-        int[] aux2;
+        Object[] aux2;
+        int[] aux1;
         int apuntador = this.punteroCarga;
+        int cantCargar = (this.getCantidadPag()/factor);
+        if(cantCargar >(this.getCantidadPag()-this.getPaginasEnMp())){
+            cantCargar = (this.getCantidadPag()-this.getPaginasEnMp());
+        }
         for(int i=0;i<this.getCantidadPag();i++){
             if(!this.paginas[apuntador].getP()){
                 aux.add(apuntador);
-                if(aux.size()==((this.getCantidadPag()/2)+1)){
+                if(aux.size()==cantCargar){
                     break;
                 }
             }
             apuntador = ((apuntador+1)%this.paginas.length);
         }
-        aux12 = aux.toArray();
-        aux2 = new int[aux12.length];
-        for(int i=0;i<aux12.length;i++){
-            aux2[i] = (int)aux12[i];
+        aux2 = aux.toArray();
+        aux1 = new int[aux2.length];
+        for(int i=0;i<aux2.length;i++){
+            aux1[i] = (int)aux2[i];
         }
-        PlanificadorMid.escribirPag(this, aux2); //Escribir página
+        PlanificadorMid.escribirPag(this, aux1); //Escribir página
         this.setEstado(false, false, false, true); //En estado de ejecución
         UIEjecucion.updateProcessIDs(); //Actualización visual
     }

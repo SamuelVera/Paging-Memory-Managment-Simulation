@@ -40,10 +40,13 @@ public class OS{
         Proceso p = new Proceso(id, tam, OS.getTamMarco());
         
             //Determinar si es creable el proceso
-        if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam()<=OS.getDisponibleMs()){ 
+        if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam() <= OS.getDisponibleMs()){ 
             PlanificadorMid.cargarProceso(p); //Crear proceso y asignarle memoria
-            UIEjecucion.ocupadoMs += p.getTam();
+            UIEjecucion.disMs = OS.getDisponibleMs();
             p.start(); //Iniciar el proceso
+            if(!OS.noInicia){
+                UIEjecucion.updateProcessIDs();
+            }
             OS.procesos.add(p); //Añadir a la tabla de procesos
         }else{
             System.out.println("Add JOptinonPane de ms insuficiente o proceso muy grande");
@@ -55,16 +58,17 @@ public class OS{
         PlanificadorMid.sacarProcesoMem(p);
         int aux = OS.getProcesoTableIndex(p.getIdP());
         OS.procesos.remove(aux);
-        UIEjecucion.ocupadoMs -= p.getTam();
+        UIEjecucion.disMs = OS.getDisponibleMs();
+        UIEjecucion.updateProcessIDs();
     }
     
     protected static void sacarFinalizado(Proceso p) throws InterruptedException{
         PlanificadorMid.sacarProcesoMem(p);
         int aux = OS.getProcesoTableIndex(p.getIdP());
-        OS.procesos.remove(aux);
-        UIEjecucion.ocupadoMs -= p.getTam();
-        UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
         UIEjecucion.updateProcessIDs();
+        OS.procesos.remove(aux);
+        UIEjecucion.disMs = OS.getDisponibleMs();
+        UIEjecucion.disMsLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
     }
     
     public static void suspenderProceso(Proceso p) throws InterruptedException{
@@ -144,7 +148,6 @@ public class OS{
         for(int i=0;i<aux.length;i++){
             ocu = ocu + ((Proceso)aux[i]).getTam();
         }
-        ocu = OS.tamMS-ocu;
         return OS.getTamMS() - ocu;
     }
     

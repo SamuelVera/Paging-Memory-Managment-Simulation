@@ -19,7 +19,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
             //Desplegar arreglo de memoria
         UIEjecucion.celdas = new JTextField[OS.getNumMarcos()];
         UIEjecucion.labelCeldas = new JLabel[OS.getNumMarcos()];
-        UIEjecucion.ocuMpLabel = new JLabel();
+        UIEjecucion.disMpLabel = new JLabel();
         
             //Inicializar arreglo visual
         for(int i=0;i<UIEjecucion.celdas.length;i++){
@@ -62,7 +62,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
             this.memsLabel.setText("Memoria Secundaria: "+aux+" Mb");
         }
         
-        this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs)+" Mb");
+        this.ocuLabel.setText("Espacio disponible: "+(UIEjecucion.disMs)+" Mb");
         
     }
     
@@ -161,7 +161,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
                     OS.crearProceso(ingresar, aux);
                     this.idField.setText("");
                     this.tamField.setText("");
-                    this.ocuLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
+                    this.ocuLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
                 } catch (InterruptedException ex) {
                     Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
                 }

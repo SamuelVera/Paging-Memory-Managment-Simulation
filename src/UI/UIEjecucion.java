@@ -19,8 +19,8 @@ public class UIEjecucion extends javax.swing.JFrame {
     private static JLabel[] idProcesos;
     private static JLabel[] pagSelecProc;
         //Label de procesos
-    public static double ocupadoMs;
-    public static double ocupadoMp;
+    public static double disMs;
+    public static double disMp;
     
     public UIEjecucion() {
         
@@ -79,7 +79,7 @@ public class UIEjecucion extends javax.swing.JFrame {
             this.memsLabel.setText("Memoria Secundaria: "+aux+" Mb");
         }
         
-        UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
+        UIEjecucion.disMsLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
         this.updateProcessIds();
         OS.startSimul();
     }
@@ -110,7 +110,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         tamLabel = new javax.swing.JLabel();
         tamField = new javax.swing.JTextField();
         agregar = new javax.swing.JButton();
-        ocuMsLabel = new javax.swing.JLabel();
+        disMsLabel = new javax.swing.JLabel();
         verLabel = new javax.swing.JLabel();
         ver = new javax.swing.JButton();
         verField = new javax.swing.JTextField();
@@ -121,7 +121,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         selectFrag = new javax.swing.JLabel();
         selectTam = new javax.swing.JLabel();
         unitProTam = new javax.swing.JComboBox<>();
-        ocuMpLabel = new javax.swing.JLabel();
+        disMpLabel = new javax.swing.JLabel();
 
         jLabel3.setText("jLabel3");
 
@@ -189,8 +189,8 @@ public class UIEjecucion extends javax.swing.JFrame {
         });
         getContentPane().add(agregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 490, 80, -1));
 
-        ocuMsLabel.setText("Espacio ocupado:");
-        getContentPane().add(ocuMsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 30, 230, 20));
+        disMsLabel.setText("Espacio disponible:");
+        getContentPane().add(disMsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 30, 230, 20));
 
         verLabel.setText("Ver por ID:");
         getContentPane().add(verLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 580, 130, 20));
@@ -220,8 +220,8 @@ public class UIEjecucion extends javax.swing.JFrame {
         unitProTam.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Kb", "Mb" }));
         getContentPane().add(unitProTam, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 520, -1, -1));
 
-        ocuMpLabel.setText("Espacio ocupado:");
-        getContentPane().add(ocuMpLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 30, 220, 20));
+        disMpLabel.setText("Espacio disponible:");
+        getContentPane().add(disMpLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(390, 30, 220, 20));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -264,7 +264,7 @@ public class UIEjecucion extends javax.swing.JFrame {
         this.volver.setVisible(!show);
     }
     
-    protected void updateProcessIds(){
+    private void updateProcessIds(){
         if(idProcesos != null){
             for(int i=0;i<UIEjecucion.idProcesos.length;i++){
                     UIEjecucion.idProcesos[i].setVisible(false);
@@ -301,6 +301,7 @@ public class UIEjecucion extends javax.swing.JFrame {
                 }
             }
         }else{
+            UIEjecucion.selectEstado.setText(""+OS.getEstadoProceso(UIEjecucion.actual.getIdP()));
             for(int i=0;i<UIEjecucion.pagSelecProc.length;i++){
                 UIEjecucion.pagSelecProc[i].setText(i+": ");
                 if((UIEjecucion.actual.getETP(i)).getP()){
@@ -362,7 +363,7 @@ public class UIEjecucion extends javax.swing.JFrame {
                     OS.crearProceso(probar, aux);
                     this.idField.setText("");
                     this.tamField.setText("");
-                    UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
+                    UIEjecucion.disMsLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
                     this.updateProcessIds();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
@@ -399,7 +400,7 @@ public class UIEjecucion extends javax.swing.JFrame {
                     this.selectTam.setText("Tamaño: "+(UIEjecucion.actual.getTam()/1024)+" Kb");
                 }
                 this.selectProcLabel.setText("ID: "+UIEjecucion.actual.getIdP());
-                this.selectEstado.setText(""+OS.getEstadoProceso(UIEjecucion.actual.getIdP()));
+                UIEjecucion.selectEstado.setText(""+OS.getEstadoProceso(UIEjecucion.actual.getIdP()));
                 if(UIEjecucion.actual.getFrag() < 1024){
                     this.selectFrag.setText("Fragmentación: "+UIEjecucion.actual.getFrag()+" bytes");
                 }else if(UIEjecucion.actual.getFrag()/1024 < 1024){
@@ -426,7 +427,7 @@ public class UIEjecucion extends javax.swing.JFrame {
                 }
                 this.updateProcessIds();
                 this.elimnField.setText("");
-                UIEjecucion.ocuMsLabel.setText("Espacio ocupado: "+(UIEjecucion.ocupadoMs/(1024*1024))+" Mb");
+                UIEjecucion.disMsLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
             }else{
                 System.out.println("Add JOptionPane para fallo en búsqueda");
             }
@@ -467,6 +468,8 @@ public class UIEjecucion extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel addLabel;
     private javax.swing.JButton agregar;
+    public static javax.swing.JLabel disMpLabel;
+    public static javax.swing.JLabel disMsLabel;
     private javax.swing.JButton eliminar;
     private javax.swing.JTextField elimnField;
     private javax.swing.JLabel elimnLabel;
@@ -476,10 +479,8 @@ public class UIEjecucion extends javax.swing.JFrame {
     private javax.swing.JLabel marcoLabel;
     private javax.swing.JLabel mempLabel;
     private javax.swing.JLabel memsLabel;
-    public static javax.swing.JLabel ocuMpLabel;
-    public static javax.swing.JLabel ocuMsLabel;
     private static javax.swing.JLabel procesosLabel;
-    private javax.swing.JLabel selectEstado;
+    private static javax.swing.JLabel selectEstado;
     private javax.swing.JLabel selectFrag;
     private javax.swing.JLabel selectNumPag;
     private javax.swing.JLabel selectProcLabel;

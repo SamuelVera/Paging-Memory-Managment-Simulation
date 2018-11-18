@@ -195,9 +195,9 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JLabel" name="ocuMsLabel">
+    <Component class="javax.swing.JLabel" name="disMsLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Espacio ocupado:"/>
+        <Property name="text" type="java.lang.String" value="Espacio disponible:"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
@@ -266,6 +266,9 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="selectEstado">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="10"/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout" value="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout$AbsoluteConstraintsDescription">
           <AbsoluteConstraints x="10" y="50" width="210" height="20"/>
@@ -304,9 +307,9 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JLabel" name="ocuMpLabel">
+    <Component class="javax.swing.JLabel" name="disMpLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Espacio ocupado:"/>
+        <Property name="text" type="java.lang.String" value="Espacio disponible:"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="9"/>
