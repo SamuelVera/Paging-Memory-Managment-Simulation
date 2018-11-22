@@ -1,6 +1,7 @@
 package UI;
 
 import com.sun.javafx.fxml.expression.BinaryExpression;
+import javax.swing.JOptionPane;
 import logica.OS;
 
 public class InicializadorMemoria extends javax.swing.JFrame {
@@ -112,27 +113,26 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         if(this.mpField.getText().length() > 0 && this.msField.getText().length() > 0 && this.paginaField.getText().length() > 0){
                 //Validar tamMarco
             tamMarco = Integer.parseInt(this.paginaField.getText());
-            pasar = this.isPow(tamMarco);
             if(tamMarco <= 0){
-                System.out.println("Add JOptionPane de tamaño de marco negativo");
+                JOptionPane.showMessageDialog(this, "Tamaño de marco inválido", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            pasar = this.isPow(tamMarco);
             if(pasar){
                 tamMP = Integer.parseInt(this.mpField.getText());
-                pasar = this.isPow(tamMP);
                 if(tamMP <= 0){
-                    System.out.println("Add JOptionPane de tamaño de mp negativo");
+                    JOptionPane.showMessageDialog(this, "Tamaño de memoria principal inválido", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                pasar = this.isPow(tamMP);
                 if(pasar){
                     
                     tamMS = Integer.parseInt(this.msField.getText());
-                    pasar = this.isPow(tamMS);
-                    
                     if(tamMS <= 0){
-                        System.out.println("Add JOptionPane de tamaño de ms negativo");
+                        JOptionPane.showMessageDialog(this, "Tamaño de memoria secundaria inválido", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
+                    pasar = this.isPow(tamMS);
                     
                     if(pasar){
                         String aux = this.unitMs.getItemAt(this.unitMs.getSelectedIndex());
@@ -152,7 +152,7 @@ public class InicializadorMemoria extends javax.swing.JFrame {
                         }
                         
                         if(tamMP > tamMS){
-                            System.out.println("Add JOptionPane de memoria principal es más grande que secundaria");
+                            JOptionPane.showMessageDialog(this, "La memoria principal es más grande que la secundaria", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                         
@@ -165,12 +165,12 @@ public class InicializadorMemoria extends javax.swing.JFrame {
                         }
                         
                         if(tamMP/tamMarco < 16){
-                            System.out.println("Add JOptionPane de tamaño de marco muy grande");
+                            JOptionPane.showMessageDialog(this, "Tamaño de marco muy grande para simulación efectiva", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                         
                         if(tamMP/tamMarco > 256){
-                            System.out.println("Add JOptionPane de marco muy pequeño");
+                            JOptionPane.showMessageDialog(this, "Tamaño de marco muy pequeño para simulación efectiva", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                         
@@ -179,16 +179,16 @@ public class InicializadorMemoria extends javax.swing.JFrame {
                         InicializadorProcesos exe = new InicializadorProcesos();
                         this.setVisible(false);
                     }else{
-                        System.out.println("Add JOptinoPane de tamaño de ms no es potencia de 2");
+                        JOptionPane.showMessageDialog(this, "Tamaño de memoria secundaria no es potencia de 2", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                     }
                 }else{
-                    System.out.println("Add JOptinoPane de tamaño de mp no es potencia de 2");
+                    JOptionPane.showMessageDialog(this, "Tamaño de memoria principal no es potencia de 2", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
                 }
             }else{
-                System.out.println("Add JOptinoPane de tamaño de página no es potencia de 2");
+                JOptionPane.showMessageDialog(this, "Tamaño de marco no es potencia de 2", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
             }
         }else{
-            System.out.println("Add JOptinoPane de campos inválidos");
+            JOptionPane.showMessageDialog(this, "Campos inválidos", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
         }
         
     }//GEN-LAST:event_iniciarActionPerformed
@@ -197,7 +197,7 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         char aux = evt.getKeyChar();
         if(Character.isLetter(aux)){
             evt.consume();
-            System.out.println("Add JOption de presionaste un char");
+            JOptionPane.showMessageDialog(this, "El campo solo acepta números", "ERROR DE INPUT", JOptionPane.WARNING_MESSAGE);
             return;
         }
     }//GEN-LAST:event_paginaFieldKeyTyped
@@ -206,7 +206,7 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         char aux = evt.getKeyChar();
         if(Character.isLetter(aux)){
             evt.consume();
-            System.out.println("Add JOption de presionaste un char");
+            JOptionPane.showMessageDialog(this, "El campo solo acepta números", "ERROR DE INPUT", JOptionPane.WARNING_MESSAGE);
             return;
         }
     }//GEN-LAST:event_mpFieldKeyTyped
@@ -215,7 +215,7 @@ public class InicializadorMemoria extends javax.swing.JFrame {
         char aux = evt.getKeyChar();
         if(Character.isLetter(aux)){
             evt.consume();
-            System.out.println("Add JOption de presionaste un char");
+            JOptionPane.showMessageDialog(this, "El campo solo acepta números", "ERROR DE INPUT", JOptionPane.WARNING_MESSAGE);
             return;
         }
     }//GEN-LAST:event_msFieldKeyTyped

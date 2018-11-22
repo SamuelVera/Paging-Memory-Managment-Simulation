@@ -105,7 +105,7 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="javax.swing.JLabel" name="ocuLabel">
+    <Component class="javax.swing.JLabel" name="disMsLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="Mem. Secundaria ocupada: "/>
       </Properties>
@@ -141,9 +141,10 @@
     <Component class="javax.swing.JComboBox" name="unitProTam">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="2">
-            <StringItem index="0" value="Kb"/>
-            <StringItem index="1" value="Mb"/>
+          <StringArray count="3">
+            <StringItem index="0" value="Bytes"/>
+            <StringItem index="1" value="Kb"/>
+            <StringItem index="2" value="Mb"/>
           </StringArray>
         </Property>
       </Properties>

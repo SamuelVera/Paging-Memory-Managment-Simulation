@@ -36,47 +36,50 @@ public class OS{
         OS.noInicia = true;
     }
     
-    public static void crearProceso(String id, double tam) throws InterruptedException{
-        Proceso p = new Proceso(id, tam, OS.getTamMarco());
-        
-            //Determinar si es creable el proceso
-        if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam() <= OS.getDisponibleMs()){ 
-            PlanificadorMid.cargarProceso(p); //Crear proceso y asignarle memoria
-            UIEjecucion.disMs = OS.getDisponibleMs();
-            p.start(); //Iniciar el proceso
-            if(!OS.noInicia){
-                UIEjecucion.updateProcessIDs();
-            }
-            OS.procesos.add(p); //Añadir a la tabla de procesos
-        }else{
-            System.out.println("Add JOptinonPane de ms insuficiente o proceso muy grande");
+    public static void crearProceso(Proceso p) throws InterruptedException{
+        PlanificadorMid.cargarProceso(p); //Crear proceso y asignarle memoria
+        p.start(); //Iniciar el proceso
+        if(!OS.noInicia){
+            UIEjecucion.updateProcessIDs();
         }
+        OS.procesos.add(p); //Añadir a la tabla de procesos
     }
     
     public static void eliminarProceso(Proceso p) throws InterruptedException{
+        p = OS.getProceso(p.getIdP());
         p.eliminar();
-        PlanificadorMid.sacarProcesoMem(p);
         int aux = OS.getProcesoTableIndex(p.getIdP());
         OS.procesos.remove(aux);
-        UIEjecucion.disMs = OS.getDisponibleMs();
-        UIEjecucion.updateProcessIDs();
+        UIEjecucion.updateProcessIDs(); //Actualización visual
+        if(OS.getDisponibleMs()/(1024*1024*1024)>=1){
+            UIEjecucion.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024*1024)+" Gb");
+        }else if(OS.getDisponibleMs()/(1024*1024)>=1){
+            UIEjecucion.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024)+" Mb");
+        }else{
+            UIEjecucion.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024)+" Kb");
+        }
     }
     
     protected static void sacarFinalizado(Proceso p) throws InterruptedException{
-        PlanificadorMid.sacarProcesoMem(p);
         int aux = OS.getProcesoTableIndex(p.getIdP());
-        UIEjecucion.updateProcessIDs();
         OS.procesos.remove(aux);
-        UIEjecucion.disMs = OS.getDisponibleMs();
-        UIEjecucion.disMsLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
+        UIEjecucion.updateProcessIDs(); //Actualización visual
+        if(OS.getDisponibleMs()/(1024*1024*1024)>=1){
+            UIEjecucion.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024*1024)+" Gb");
+        }else if(OS.getDisponibleMs()/(1024*1024)>=1){
+            UIEjecucion.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024)+" Mb");
+        }else{
+            UIEjecucion.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024)+" Kb");
+        }
     }
     
     public static void suspenderProceso(Proceso p) throws InterruptedException{
-        
         PlanificadorMid.sacarProcesoMem(p);
-        p.setEstado(false, false, true, false); //Asignar estado de suspendido
+    }
+    
+    public static void bloquearProceso(Proceso p) throws InterruptedException{
+        p.setEstado(false, true, false); //Asignar estado de bloqueado
         UIEjecucion.updateProcessIDs();
-        
     }
     
     public static int getNumMarcos(){
@@ -99,7 +102,7 @@ public class OS{
     }
     
     public static Proceso getProceso(String i){
-        if(OS.procesos.size()>0){
+        if(!OS.procesos.isEmpty()){
             Object[] aux = OS.procesos.toArray();
             for(int j=0;j<aux.length;j++){
                 if(i.equals(((Proceso)aux[j]).getIdP())){
@@ -139,10 +142,14 @@ public class OS{
     }
     
     public static String getEstadoProceso(String i){
+        if(OS.getProceso(i) != null){
         return OS.getProceso(i).getEstado();
+        }else{
+            return "Eliminado";
+        }
     }
     
-    protected static double getDisponibleMs(){
+    public static double getDisponibleMs(){
         double ocu = 0;
         Object[] aux = OS.procesos.toArray();
         for(int i=0;i<aux.length;i++){

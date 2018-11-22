@@ -22,11 +22,11 @@ public class PlanificadorMid { //Planificador de memoria
             int j=0; //Número de marco
             while(i<(p.getCantidadPag())/2){
                 if(OS.marcos[j].getLibre()){
-                    UIEjecucion.celdas[j].setText(p.getIdP()+"/"+p.getETP(i).numPag); //Visual
+                    UIEjecucion.celdas[j].setText(p.getIdP()+"/"+p.getETP(i).getNum()); //Visual
                     UIEjecucion.celdas[j].setBackground(Color.red); //Visual
                     p.setMarcoToETP(j, i); //Darle el número de marco a la ETP
                     p.getETP(i).setP(true); //Bit de presencia
-                    p.getETP(i).u = true; //Bit de referencia para reloj
+                    p.getETP(i).setU(true); //Bit de referencia para reloj
                     OS.marcos[j].setLibre(false); //Este marco está ocupado
                     OS.marcos[j].setPagina(p.getETP(i)); //Nueva página en el marco
                     i++;
@@ -34,11 +34,10 @@ public class PlanificadorMid { //Planificador de memoria
                 j++;
             }
         }
-        UIEjecucion.disMp = OS.getDisponibleMp();
-        if(UIEjecucion.disMp/(1024*1024) > 1){
-            UIEjecucion.disMpLabel.setText("Espacio disponible: "+UIEjecucion.disMp/(1024*1024)+" Mb");
+        if(OS.getDisponibleMp()/(1024*1024) > 1){
+            UIEjecucion.disMpLabel.setText("Espacio disponible: "+OS.getDisponibleMp()/(1024*1024)+" Mb");
         }else{
-            UIEjecucion.disMpLabel.setText("Espacio disponible: "+UIEjecucion.disMp/(1024)+" Kb");
+            UIEjecucion.disMpLabel.setText("Espacio disponible: "+OS.getDisponibleMp()/(1024)+" Kb");
         }
         PlanificadorMid.accesoMem.release();
     }
@@ -48,22 +47,21 @@ public class PlanificadorMid { //Planificador de memoria
         PlanificadorMid.accesoMem.acquire();
         for(int i=0;i<OS.marcos.length;i++){
             if(OS.marcos[i].getPagina() != null){
-                if(OS.marcos[i].getPagina().idProceso.equals(p.getIdP())){
+                if(OS.marcos[i].getPagina().getIdProceso().equals(p.getIdP())){
                     UIEjecucion.celdas[i].setBackground(Color.green); //Visual
                     UIEjecucion.celdas[i].setText(""); //Visual
-                    p.getETP(OS.marcos[i].getPagina().numPag).setP(false); //Bit de presencia = 0
-                    p.getETP(OS.marcos[i].getPagina().numPag).u = false; //Bit de referencia 
-                    p.setMarcoToETP(-1, OS.marcos[i].getPagina().numPag); //Quitarle marco a la página
+                    p.getETP(OS.marcos[i].getPagina().getNum()).setP(false); //Bit de presencia = 0
+                    p.getETP(OS.marcos[i].getPagina().getNum()).setU(false); //Bit de referencia 
+                    p.setMarcoToETP(-1, OS.marcos[i].getPagina().getNum()); //Quitarle marco a la página
                     OS.marcos[i].setLibre(true); //Libera el marco
                     OS.marcos[i].setPagina(null); //Sacar la página de mp
                 }
             }
         }
-        UIEjecucion.disMp = OS.getDisponibleMp();
-        if(UIEjecucion.disMp/(1024*1024) > 1){
-            UIEjecucion.disMpLabel.setText("Espacio disponible: "+UIEjecucion.disMp/(1024*1024)+" Mb");
+        if(OS.getDisponibleMp()/(1024*1024) > 1){
+            UIEjecucion.disMpLabel.setText("Espacio disponible: "+OS.getDisponibleMp()/(1024*1024)+" Mb");
         }else{
-            UIEjecucion.disMpLabel.setText("Espacio disponible: "+UIEjecucion.disMp/(1024)+" Kb");
+            UIEjecucion.disMpLabel.setText("Espacio disponible: "+OS.getDisponibleMp()/(1024)+" Kb");
         }
         PlanificadorMid.accesoMem.release();
     }
@@ -97,34 +95,34 @@ public class PlanificadorMid { //Planificador de memoria
         while(true){
                 //No considerar los marcos libres pues no tienen páginas
             if(!OS.marcos[PlanificadorMid.apuntador].getLibre()){
-                if(OS.marcos[PlanificadorMid.apuntador].getPagina().u){
+                if(OS.marcos[PlanificadorMid.apuntador].getPagina().getU()){
                         //Si la página tiene su bit de referencia en 1 lo setea a 0
-                    OS.marcos[PlanificadorMid.apuntador].getPagina().u = false;
+                    OS.marcos[PlanificadorMid.apuntador].getPagina().setU(false);
                 }else{ //La página tiene su bit de referencia en 0
                         //Añadir el número del marco de dicha página
                     marco.add(PlanificadorMid.apuntador);
-                    Proceso p = OS.getProceso(OS.marcos[PlanificadorMid.apuntador].getPagina().idProceso);
+                    Proceso p = OS.getProceso(OS.marcos[PlanificadorMid.apuntador].getPagina().getIdProceso());
                         //Modificar el bit de presencia de la página a sacar
-                    p.getETP(OS.marcos[PlanificadorMid.apuntador].getPagina().numPag).setP(false);
+                    OS.marcos[PlanificadorMid.apuntador].getPagina().setP(false);
                         //Modificar bit de referencia de la página a sacar (Respaldo)
-                    p.getETP(OS.marcos[PlanificadorMid.apuntador].getPagina().numPag).u = false;
+                    OS.marcos[PlanificadorMid.apuntador].getPagina().setU(false);
                         //Desasignarle el marco a la página que va a ser sacada y volverlo -1
-                    p.setMarcoToETP(-1, OS.marcos[PlanificadorMid.apuntador].getPagina().numPag);
+                    OS.marcos[PlanificadorMid.apuntador].getPagina().setMarco(-1);
                         //Liberar el marco de la mp
+                    if(p != null){
+                        p.setPagina(OS.marcos[PlanificadorMid.apuntador].getPagina());
+                    }
                     OS.marcos[PlanificadorMid.apuntador].setLibre(true);
                         //Eliminar referencia en mp de la página
                     OS.marcos[PlanificadorMid.apuntador].setPagina(null);
                         //Si el proceso cuya página es víctima se quedó sin páginas en mp se suspende
-                    if(p.getPaginasEnMp() == 0){
-                        p.setEstado(false, false, true, false);
-                    }
                     UIEjecucion.celdas[PlanificadorMid.apuntador].setBackground(Color.green); //Visual
                     UIEjecucion.celdas[PlanificadorMid.apuntador].setText(""); //Visual
                 }
             }
                 //Mover el apuntador
             PlanificadorMid.apuntador = (PlanificadorMid.apuntador+1)%OS.marcos.length;
-            if(marco.size() >= n){
+            if(marco.size() >= n){ //Ya se cumplió con la solicitud
                 aux = marco.toArray();
                 return aux;
             }
@@ -133,26 +131,23 @@ public class PlanificadorMid { //Planificador de memoria
     
         //Escribir páginas de un proceso en memoria
     protected static void escribirPag(Proceso p, int[] pags) throws InterruptedException{
-        PlanificadorMid.accesoMem.acquire();
         Object[] aux;
         aux = PlanificadorMid.liberarMarcos(pags.length);
         for(int i=0;i<aux.length;i++){
             p.getETP(pags[i]).setP(true); //Asignar bit de presencia
-            p.getETP(pags[i]).u = true; //Asignar bit de referencia
+            p.getETP(pags[i]).setU(true); //Asignar bit de referencia
             System.out.println((int)aux[i]);
             p.setMarcoToETP((int)aux[i], pags[i]); //Asignar número de marco
             OS.marcos[(int)aux[i]].setLibre(false); //Este marco ahora está ocupado
             OS.marcos[(int)aux[i]].setPagina(p.getETP(pags[i])); //Nueva página en mp
-            UIEjecucion.celdas[(int)aux[i]].setText(p.getIdP()+"/"+p.getETP(pags[i]).numPag); //Visual
+            UIEjecucion.celdas[(int)aux[i]].setText(p.getIdP()+"/"+p.getETP(pags[i]).getNum()); //Visual
             UIEjecucion.celdas[(int)aux[i]].setBackground(Color.red); //Visual
         }
-        UIEjecucion.disMp = OS.getDisponibleMp();
-        if(UIEjecucion.disMp/(1024*1024) > 1){
-            UIEjecucion.disMpLabel.setText("Espacio disponible: "+UIEjecucion.disMp/(1024*1024)+" Mb");
+        if(OS.getDisponibleMp()/(1024*1024) > 1){
+            UIEjecucion.disMpLabel.setText("Espacio disponible: "+OS.getDisponibleMp()/(1024*1024)+" Mb");
         }else{
-            UIEjecucion.disMpLabel.setText("Espacio disponible: "+UIEjecucion.disMp/(1024)+" Kb");
+            UIEjecucion.disMpLabel.setText("Espacio disponible: "+OS.getDisponibleMp()/(1024)+" Kb");
         }
-        PlanificadorMid.accesoMem.release();
     }
     
 }

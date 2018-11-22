@@ -2,10 +2,10 @@ package logica;
 
 public class ETP { //Entrada de la tabla de página
     private boolean p; //Presente en memoria principal
-    boolean u; //Referenciado recientemente
-    int numMar; //Número de marco asociada
-    int numPag; //Número de pagina del proceso
-    String idProceso;
+    private boolean u; //Referenciado recientemente
+    private int numMar; //Número de marco asociada
+    private final int numPag; //Número de pagina del proceso
+    private final String idProceso;
     
     public ETP(int i, String id){
         this.p = false;
@@ -14,8 +14,16 @@ public class ETP { //Entrada de la tabla de página
         this.idProceso = id;
     }
     
-    public void setP(boolean set){
+    protected void setP(boolean set){
         this.p = set;
+    }
+    
+    protected void setU(boolean set){
+        this.u = set;
+    }
+    
+    protected boolean getU(){
+        return this.u;
     }
     
     public boolean getP(){
@@ -28,6 +36,18 @@ public class ETP { //Entrada de la tabla de página
         }else{
             return -1;
         }
+    }
+    
+    protected String getIdProceso(){
+        return this.idProceso;
+    }
+    
+    protected void setMarco(int marco){
+        this.numMar = marco;
+    }
+    
+    protected int getNum(){
+        return this.numPag;
     }
     
 }

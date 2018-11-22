@@ -3,7 +3,7 @@ package logica;
 public class Marco {
     
     private ETP pagina;
-    private int numMarco;
+    private final int numMarco;
     private boolean libre;
     
     protected Marco(int numMarco){

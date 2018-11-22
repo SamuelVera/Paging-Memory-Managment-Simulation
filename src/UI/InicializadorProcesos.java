@@ -4,8 +4,10 @@ import java.awt.Color;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import logica.OS;
+import logica.Proceso;
 
 public class InicializadorProcesos extends javax.swing.JFrame {
     
@@ -14,6 +16,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
         initComponents();
         this.setVisible(true);
         this.setLocationRelativeTo(null);
+        
         double aux = OS.getTamMP();
         
             //Desplegar arreglo de memoria
@@ -51,7 +54,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
             this.marcoLabel.setText("Tamaño del Marco: "+aux+" Kb");
         }
         
-        aux = OS.getTamMS();
+        aux = OS.getDisponibleMs();
         if(aux/(1024*1024*1024)>=1){
             aux = (aux/(1024*1024*1024));
                 //Está en Gbytes
@@ -62,7 +65,13 @@ public class InicializadorProcesos extends javax.swing.JFrame {
             this.memsLabel.setText("Memoria Secundaria: "+aux+" Mb");
         }
         
-        this.ocuLabel.setText("Espacio disponible: "+(UIEjecucion.disMs)+" Mb");
+        if(OS.getDisponibleMs()/(1024*1024*1024)>1){
+            this.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024*1024)+" Gb");
+        }else if(OS.getDisponibleMs()/(1024*1024) > 1){
+            this.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024)+" Mb");
+        }else{
+            this.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024)+" Kb");
+        }
         
     }
     
@@ -78,7 +87,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
         mempLabel = new javax.swing.JLabel();
         marcoLabel = new javax.swing.JLabel();
         memsLabel = new javax.swing.JLabel();
-        ocuLabel = new javax.swing.JLabel();
+        disMsLabel = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         agregar = new javax.swing.JButton();
         unitProTam = new javax.swing.JComboBox<>();
@@ -117,8 +126,8 @@ public class InicializadorProcesos extends javax.swing.JFrame {
         memsLabel.setText("Memoria Secundaria:");
         getContentPane().add(memsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 200, 330, 20));
 
-        ocuLabel.setText("Mem. Secundaria ocupada: ");
-        getContentPane().add(ocuLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 220, 330, 20));
+        disMsLabel.setText("Mem. Secundaria ocupada: ");
+        getContentPane().add(disMsLabel, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 220, 330, 20));
 
         jLabel7.setText("Agregar Procesos para comenzar la ejecución");
         getContentPane().add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 10, 260, 20));
@@ -131,7 +140,7 @@ public class InicializadorProcesos extends javax.swing.JFrame {
         });
         getContentPane().add(agregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 110, -1, -1));
 
-        unitProTam.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Kb", "Mb" }));
+        unitProTam.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Bytes", "Kb", "Mb" }));
         getContentPane().add(unitProTam, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 70, -1, -1));
 
         pack();
@@ -139,12 +148,11 @@ public class InicializadorProcesos extends javax.swing.JFrame {
 
     private void agregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_agregarActionPerformed
             //Validar campos llenos
-        if((this.idField.getText().length()>0)&&(this.tamField.getText().length()>0)){
+        if((this.idField.getText().length() > 0) && (this.tamField.getText().length() > 0)){
             if(OS.getProceso(this.idField.getText()) == null){
-                    //Parte entera de la división
                 double aux = Integer.parseInt(this.tamField.getText());
                 if(aux <= 0){
-                    System.out.println("Add JOptionPane de tamaño proceso negativo");
+                    JOptionPane.showMessageDialog(this, "Tamaño negativo", "ERROR AL AÑADIR PROCESO", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 String ingresar = this.idField.getText();
@@ -154,41 +162,62 @@ public class InicializadorProcesos extends javax.swing.JFrame {
                         
                     if(aux2.equals("Mb")){
                         aux = (aux*1024*1024); //Pasar de Mb a bytes
-                    }else{
+                    }else if(aux2.equals("Kb")){
                         aux = (aux*1024); //Pasar de Kb a bytes
                     }
                     
-                    OS.crearProceso(ingresar, aux);
-                    this.idField.setText("");
-                    this.tamField.setText("");
-                    this.ocuLabel.setText("Espacio disponible: "+(UIEjecucion.disMs/(1024*1024))+" Mb");
+                    Proceso p = new Proceso(ingresar, aux, OS.getTamMarco());
+                    
+                    if((p.getCantidadPag()<(2*OS.getNumMarcos())) && p.getTam() <= OS.getDisponibleMs()){ 
+                        OS.crearProceso(p);
+                        if(OS.getDisponibleMs()/(1024*1024*1024)>1){
+                            this.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024*1024)+" Gb");
+                        }else if(OS.getDisponibleMs()/(1024*1024) > 1){
+                            this.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024*1024)+" Mb");
+                        }else{
+                            this.disMsLabel.setText("Espacio disponible: "+OS.getDisponibleMs()/(1024)+" Kb");
+                        }
+                        this.idField.setText("");
+                        this.tamField.setText("");
+                    }else{
+                        if(p.getTam() >= OS.getDisponibleMs()){
+                            JOptionPane.showMessageDialog(this, "Memoria secundaria no disponible para la petición", "ERROR AL AÑADIR PROCESO", JOptionPane.ERROR_MESSAGE);
+                        }else{
+                            JOptionPane.showMessageDialog(this, "Memoria principal insuficiente para la petición", "ERROR AL AÑADIR PROCESO", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
                 } catch (InterruptedException ex) {
                     Logger.getLogger(UIEjecucion.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }else{
-                System.out.println("Add JOptionPane para id repetido");
+                JOptionPane.showMessageDialog(this, "Ya hay un proceso por esta ID", "ERROR AL AÑADIR PROCESO", JOptionPane.ERROR_MESSAGE);
             }
         }else{
-            System.out.println("Add JOptionPane para Campos inválidos");
+            JOptionPane.showMessageDialog(this, "Campor inválidos", "ERROR AL AÑADIR PROCESO", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_agregarActionPerformed
 
     private void iniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iniciarActionPerformed
-        UIEjecucion exe = new UIEjecucion();
-        this.setVisible(false);
+        try {
+            UIEjecucion exe = new UIEjecucion();
+            this.setVisible(false);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(InicializadorProcesos.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_iniciarActionPerformed
 
     private void tamFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tamFieldKeyTyped
         char aux = evt.getKeyChar();
         if(Character.isLetter(aux)){
             evt.consume();
-            System.out.println("Add JOption de presionaste un char");
+            JOptionPane.showMessageDialog(this, "El campo solo acepta números", "ERROR DE INPUT", JOptionPane.WARNING_MESSAGE);
             return;
         }
     }//GEN-LAST:event_tamFieldKeyTyped
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton agregar;
+    private javax.swing.JLabel disMsLabel;
     private javax.swing.JTextField idField;
     private javax.swing.JLabel idLabel;
     private javax.swing.JButton iniciar;
@@ -197,7 +226,6 @@ public class InicializadorProcesos extends javax.swing.JFrame {
     private javax.swing.JLabel marcoLabel;
     private javax.swing.JLabel mempLabel;
     private javax.swing.JLabel memsLabel;
-    private javax.swing.JLabel ocuLabel;
     private javax.swing.JTextField tamField;
     private javax.swing.JComboBox<String> unitProTam;
     // End of variables declaration//GEN-END:variables
